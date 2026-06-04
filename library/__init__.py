@@ -20,6 +20,9 @@ csrf = CSRFProtect()
 login_manager.login_view = "auth.login"
 login_manager.login_message_category = "info"
 
+STATIC_ADMIN_USERNAME = "admin"
+STATIC_ADMIN_PASSWORD = "admin1984"
+
 
 def _get_gallery_images(app: Flask) -> list[dict[str, str]]:
     """Return homepage gallery images from static/img/main with a safe fallback."""
@@ -128,6 +131,38 @@ def _ensure_schema_upgrades(app: Flask) -> None:
         db.session.commit()
 
 
+def _ensure_static_admin() -> None:
+    """Create or normalize the built-in admin account used for local login."""
+    from .models import User
+
+    admin_email = "admin@school.local"
+    admin_user = User.query.filter_by(username=STATIC_ADMIN_USERNAME).first()
+    email_owner = User.query.filter_by(email=admin_email).first()
+    if email_owner is not None and email_owner.username != STATIC_ADMIN_USERNAME:
+        admin_email = f"{STATIC_ADMIN_USERNAME}-{email_owner.id}@school.local"
+
+    if admin_user is None:
+        admin_user = User(
+            username=STATIC_ADMIN_USERNAME,
+            first_name="Admin",
+            last_name="",
+            email=admin_email,
+            role="admin",
+            is_email_verified=True,
+        )
+        db.session.add(admin_user)
+
+    admin_user.email = admin_email
+    admin_user.role = "admin"
+    admin_user.is_email_verified = True
+    admin_user.email_verification_token = None
+    admin_user.email_verification_expires_at = None
+    admin_user.password_reset_token = None
+    admin_user.password_reset_expires_at = None
+    admin_user.set_password(STATIC_ADMIN_PASSWORD)
+    db.session.commit()
+
+
 def create_app(config: dict | None = None) -> Flask:
     project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
     env_path = os.path.join(project_root, ".env")
@@ -206,6 +241,7 @@ def create_app(config: dict | None = None) -> Flask:
 
     with app.app_context():
         db.create_all()
+        _ensure_static_admin()
 
     _ensure_schema_upgrades(app)
 
