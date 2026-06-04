@@ -11,6 +11,37 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
 </head>
 <body>
+  <div class="topbar">
+    <div class="container topbar-inner">
+      <div class="topbar-links">
+        <details class="lang-menu">
+          <summary>
+            <img class="lang-flag" src="{{ url_for('static', filename='img/icons/flag-en.svg') }}" alt="English" />
+            <span>{{ tr('lang.en') }}</span>
+          </summary>
+          <div class="lang-dropdown" role="menu" aria-label="Language switcher">
+            <a role="menuitem" href="{{ url_for('main.set_language', lang='cs') }}">{{ tr('lang.cs') }}</a>
+            <a role="menuitem" href="{{ url_for('main.set_language', lang='en') }}">{{ tr('lang.en') }}</a>
+          </div>
+        </details>
+
+        <details class="account-menu">
+          <summary>My account</summary>
+          <div class="account-dropdown" role="menu" aria-label="My account">
+            {% if current_user.is_authenticated %}
+              <a role="menuitem" href="{{ url_for('loans.my_loans') }}">{{ tr('nav.my_loans') }}</a>
+              <a role="menuitem" href="{{ url_for('auth.logout') }}">{{ tr('nav.sign_out') }}</a>
+            {% else %}
+              <a role="menuitem" href="{{ url_for('auth.register') }}">{{ tr('nav.register') }}</a>
+              <a role="menuitem" href="{{ url_for('auth.login') }}">{{ tr('nav.sign_in') }}</a>
+              <a role="menuitem" href="{{ url_for('auth.forgot_password') }}">{{ tr('auth.forgot_password') }}</a>
+            {% endif %}
+          </div>
+        </details>
+      </div>
+    </div>
+  </div>
+
   <section class="promo-gallery" data-gallery>
     <div class="promo-stage">
       <nav class="mainnav">
@@ -39,31 +70,6 @@
                 <a class="admin" href="{{ url_for('admin.dashboard') }}">{{ tr('nav.admin') }}</a>
               {% endif %}
             {% endif %}
-          </div>
-          <div class="nav-tools">
-            <details class="lang-menu">
-              <summary>
-                <img class="lang-flag" src="{{ url_for('static', filename='img/icons/flag-en.svg') }}" alt="English" />
-                <span>{{ tr('lang.en') }}</span>
-              </summary>
-              <div class="lang-dropdown" role="menu" aria-label="Language switcher">
-                <a role="menuitem" href="{{ url_for('main.set_language', lang='cs') }}">{{ tr('lang.cs') }}</a>
-                <a role="menuitem" href="{{ url_for('main.set_language', lang='en') }}">{{ tr('lang.en') }}</a>
-              </div>
-            </details>
-            <details class="account-menu">
-              <summary>My account</summary>
-              <div class="account-dropdown" role="menu" aria-label="My account">
-                {% if current_user.is_authenticated %}
-                  <a role="menuitem" href="{{ url_for('loans.my_loans') }}">{{ tr('nav.my_loans') }}</a>
-                  <a role="menuitem" href="{{ url_for('auth.logout') }}">{{ tr('nav.sign_out') }}</a>
-                {% else %}
-                  <a role="menuitem" href="{{ url_for('auth.register') }}">{{ tr('nav.register') }}</a>
-                  <a role="menuitem" href="{{ url_for('auth.login') }}">{{ tr('nav.sign_in') }}</a>
-                  <a role="menuitem" href="{{ url_for('auth.forgot_password') }}">{{ tr('auth.forgot_password') }}</a>
-                {% endif %}
-              </div>
-            </details>
           </div>
         </div>
       </nav>
