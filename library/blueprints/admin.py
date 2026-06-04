@@ -6,6 +6,7 @@ from urllib.request import urlopen
 
 from flask import Blueprint, flash, jsonify, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
+from sqlalchemy.exc import IntegrityError
 from flask_wtf import FlaskForm
 from wtforms import IntegerField, PasswordField, SelectField, StringField, SubmitField, TextAreaField
 from wtforms.validators import DataRequired, Email, Length, NumberRange, Optional
@@ -29,7 +30,7 @@ class BookForm(FlaskForm):
     )
     total_copies = IntegerField(
         "Total copies",
-        validators=[DataRequired(), NumberRange(min=1, max=999)],
+        validators=[Optional(), NumberRange(min=1, max=999)],
         default=1,
     )
     cover_url = StringField("Cover image URL", validators=[Optional(), Length(0, 500)])
@@ -76,6 +77,17 @@ def _placeholder_email_for(username: str) -> str:
     # Use deterministic internal placeholder for accounts created without real email.
     safe = re.sub(r"[^a-zA-Z0-9_.-]", "", username).lower() or "user"
     return f"{safe}@local.invalid"
+
+
+def _normalize_book_form_values(book: Book) -> None:
+    """Keep only title/author required; persist empty optional values as NULL."""
+    book.title = (book.title or "").strip()
+    book.author = (book.author or "").strip()
+    book.isbn = ((book.isbn or "").strip() or None)
+    book.category = ((book.category or "").strip() or None)
+    book.cover_url = ((book.cover_url or "").strip() or None)
+    book.description = ((book.description or "").strip() or None)
+    book.total_copies = int(book.total_copies or 1)
 
 
 @bp.before_request
@@ -202,8 +214,14 @@ def book_new():
     if form.validate_on_submit():
         book = Book()
         form.populate_obj(book)
+        _normalize_book_form_values(book)
         db.session.add(book)
-        db.session.commit()
+        try:
+            db.session.commit()
+        except IntegrityError:
+            db.session.rollback()
+            flash("ISBN already exists. Leave ISBN empty or use a unique value.", "warning")
+            return render_template("admin/book_form.html", form=form, book=None)
         flash(tr("admin.book_added"), "success")
         return redirect(url_for("admin.books"))
     return render_template("admin/book_form.html", form=form, book=None)
@@ -215,7 +233,13 @@ def book_edit(book_id: int):
     form = BookForm(obj=book)
     if form.validate_on_submit():
         form.populate_obj(book)
-        db.session.commit()
+        _normalize_book_form_values(book)
+        try:
+            db.session.commit()
+        except IntegrityError:
+            db.session.rollback()
+            flash("ISBN already exists. Leave ISBN empty or use a unique value.", "warning")
+            return render_template("admin/book_form.html", form=form, book=book)
         flash(tr("admin.book_updated"), "success")
         return redirect(url_for("admin.books"))
     return render_template("admin/book_form.html", form=form, book=book)
