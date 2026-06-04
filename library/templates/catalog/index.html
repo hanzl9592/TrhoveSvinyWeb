@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block title %}{{ tr('catalog.title') }}{% endblock %}
+
+{% block content %}
+<h1>{{ tr('catalog.title') }}</h1>
+
+<form class="search" method="get" action="{{ url_for('catalog.index') }}">
+  <input id="catalog-search-q" type="search" name="q" value="{{ q }}" placeholder="{{ tr('catalog.search_placeholder') }}" list="catalog-search-suggestions" autocomplete="off" />
+  <datalist id="catalog-search-suggestions"></datalist>
+  <select name="category">
+    <option value="">{{ tr('catalog.all_categories') }}</option>
+    {% for c in categories %}
+      <option value="{{ c }}" {% if c == category %}selected{% endif %}>{{ c }}</option>
+    {% endfor %}
+  </select>
+  <button type="submit">{{ tr('common.filter') }}</button>
+</form>
+
+<script>
+  (function () {
+    const input = document.getElementById("catalog-search-q");
+    const datalist = document.getElementById("catalog-search-suggestions");
+    if (!input || !datalist) return;
+
+    let timer = null;
+    input.addEventListener("input", () => {
+      const q = (input.value || "").trim();
+      clearTimeout(timer);
+      if (q.length < 2) {
+        datalist.innerHTML = "";
+        return;
+      }
+      timer = setTimeout(async () => {
+        try {
+          const res = await fetch(`{{ url_for('catalog.suggest') }}?q=${encodeURIComponent(q)}`);
+          if (!res.ok) return;
+          const data = await res.json();
+          datalist.innerHTML = "";
+          data.forEach((item) => {
+            const opt = document.createElement("option");
+            opt.value = item.title;
+            opt.label = `${item.title} - ${item.author}`;
+            datalist.appendChild(opt);
+          });
+        } catch (_e) {
+          datalist.innerHTML = "";
+        }
+      }, 180);
+    });
+  })();
+</script>
+
+{% if books %}
+  <div class="grid">
+    {% for book in books %}
+      {% include "catalog/_card.html" %}
+    {% endfor %}
+  </div>
+
+  {% if pagination.pages > 1 %}
+    <nav class="pagination">
+      {% if pagination.has_prev %}
+        <a href="{{ url_for('catalog.index', q=q, category=category, page=pagination.prev_num) }}">&laquo; {{ tr('common.prev') }}</a>
+      {% endif %}
+      <span>{{ tr('common.page_of', page=pagination.page, pages=pagination.pages) }}</span>
+      {% if pagination.has_next %}
+        <a href="{{ url_for('catalog.index', q=q, category=category, page=pagination.next_num) }}">{{ tr('common.next') }} &raquo;</a>
+      {% endif %}
+    </nav>
+  {% endif %}
+{% else %}
+  <p>{{ tr('catalog.no_match') }}</p>
+{% endif %}
+{% endblock %}

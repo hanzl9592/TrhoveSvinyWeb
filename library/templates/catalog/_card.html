@@ -1,0 +1,38 @@
+<article class="card">
+  {% if book.cover_url %}
+    <img class="cover" src="{{ book.cover_url }}" alt="{{ tr('catalog.cover_alt', title=book.title) }}" />
+  {% else %}
+    <div class="cover cover-placeholder">📖</div>
+  {% endif %}
+  <h3><a href="{{ url_for('catalog.detail', book_id=book.id) }}">{{ book.title }}</a></h3>
+  <p class="muted">{{ book.author }}{% if book.year %} · {{ book.year }}{% endif %}</p>
+  {% if book.category %}<p><span class="tag">{{ book.category }}</span></p>{% endif %}
+  <p class="availability">
+    {% if book.copies_available > 0 %}
+      <span class="ok">{{ tr('catalog.available_of', available=book.copies_available, total=book.total_copies) }}</span>
+    {% else %}
+      <span class="warn">{{ tr('catalog.all_on_loan') }}</span>
+    {% endif %}
+  </p>
+
+  {% if current_user.is_authenticated %}
+    {% if book.copies_available > 0 %}
+      <form method="post" action="{{ url_for('loans.cart_add', book_id=book.id) }}" class="inline-action">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+        <input type="hidden" name="next" value="{{ request.full_path }}" />
+        <button class="btn primary" type="submit">{{ tr('loans.cart_add_btn') }}</button>
+      </form>
+      {% if current_user.is_admin %}
+        <form method="post" action="{{ url_for('loans.admin_cart_add', book_id=book.id) }}" class="inline-action" style="margin-top:0.3rem;">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+          <input type="hidden" name="next" value="{{ request.full_path }}" />
+          <button class="btn" type="submit">{{ tr('loans.admin_cart_add_btn') }}</button>
+        </form>
+      {% endif %}
+    {% else %}
+      <button class="btn" type="button" disabled>{{ tr('catalog.unavailable') }}</button>
+    {% endif %}
+  {% else %}
+    <a class="btn" href="{{ url_for('auth.login', next=url_for('catalog.index')) }}">{{ tr('catalog.sign_in_to_borrow') }}</a>
+  {% endif %}
+</article>

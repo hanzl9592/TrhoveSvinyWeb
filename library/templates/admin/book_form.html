@@ -1,0 +1,153 @@
+{% extends "base.html" %}
+{% block title %}{{ tr('admin.edit_book') if book else tr('admin.add_book') }}{% endblock %}
+{% block content %}
+<h1>{{ tr('admin.edit_book') if book else tr('admin.add_book') }}</h1>
+<form method="post" class="form">
+  {{ form.hidden_tag() }}
+  <div class="book-helper-layout">
+    <div>
+      <p>
+        {{ tr('admin.form_title') }}
+        {{ form.title(class_="input", id="book-title", autocomplete="off") }}
+        <button type="button" class="btn" id="book-helper-find">Find in Czech DB</button>
+        <span class="muted helper-hint" id="book-prefill-hint"></span>
+        {% for e in form.title.errors %}<span class="error">{{ e }}</span>{% endfor %}
+      </p>
+    </div>
+    <aside class="book-helper-side" aria-label="Book helper results">
+      <strong class="book-helper-title">Helper results</strong>
+      <select id="book-helper-combo" class="book-helper-combo" size="10" aria-label="Book helper combobox"></select>
+      <p><button type="button" class="btn" id="book-helper-use">Use selected</button></p>
+    </aside>
+  </div>
+  <p>{{ tr('admin.form_author') }} {{ form.author(class_="input", id="book-author") }}{% for e in form.author.errors %}<span class="error">{{ e }}</span>{% endfor %}</p>
+  <p>{{ tr('admin.form_isbn') }} {{ form.isbn(class_="input", id="book-isbn") }}{% for e in form.isbn.errors %}<span class="error">{{ e }}</span>{% endfor %}</p>
+  <p>{{ tr('admin.form_category') }} {{ form.category(class_="input", id="book-category") }}{% for e in form.category.errors %}<span class="error">{{ e }}</span>{% endfor %}</p>
+  <p>{{ tr('admin.form_year') }} {{ form.year(class_="input", id="book-year") }}{% for e in form.year.errors %}<span class="error">{{ e }}</span>{% endfor %}</p>
+  <p>{{ tr('admin.form_total_copies') }} {{ form.total_copies(class_="input", id="book-total-copies") }}{% for e in form.total_copies.errors %}<span class="error">{{ e }}</span>{% endfor %}</p>
+  <p>{{ tr('admin.form_cover_url') }} {{ form.cover_url(class_="input", id="book-cover-url") }}{% for e in form.cover_url.errors %}<span class="error">{{ e }}</span>{% endfor %}</p>
+  <p>{{ tr('admin.form_description') }}<br />{{ form.description(class_="input", rows=6, id="book-description") }}</p>
+  <p><button class="btn primary" type="submit">{{ tr('admin.form_submit') }}</button>
+    <a href="{{ url_for('admin.books') }}">{{ tr('common.cancel') }}</a></p>
+</form>
+
+{% if not book %}
+  <script>
+    (function () {
+      const titleInput = document.getElementById("book-title");
+      const authorInput = document.getElementById("book-author");
+      const isbnInput = document.getElementById("book-isbn");
+      const categoryInput = document.getElementById("book-category");
+      const yearInput = document.getElementById("book-year");
+      const copiesInput = document.getElementById("book-total-copies");
+      const coverInput = document.getElementById("book-cover-url");
+      const descriptionInput = document.getElementById("book-description");
+      const findButton = document.getElementById("book-helper-find");
+      const combo = document.getElementById("book-helper-combo");
+      const useButton = document.getElementById("book-helper-use");
+      const hint = document.getElementById("book-prefill-hint");
+      const suggestUrl = "{{ url_for('admin.books_suggest') }}";
+
+      let lastResults = [];
+      let activeController = null;
+
+      function setHint(text) {
+        hint.textContent = text || "";
+      }
+
+      function fillFromBook(book) {
+        authorInput.value = book.author || "";
+        isbnInput.value = book.isbn || "";
+        categoryInput.value = book.category || "";
+        yearInput.value = book.year || "";
+        coverInput.value = book.cover_url || "";
+        descriptionInput.value = book.description || "";
+        if (!copiesInput.value || copiesInput.value === "1") {
+          copiesInput.value = book.total_copies || 1;
+        }
+        setHint("Book details loaded from local Czech database. Please review and Save.");
+      }
+
+      function sourceLabel(item) {
+        if (item.source === "local") return "local";
+        if (item.source === "google-cs") return "CZ catalog";
+        return "external";
+      }
+
+      function renderComboResults(results) {
+        combo.innerHTML = "";
+        if (!results.length) {
+          const opt = document.createElement("option");
+          opt.value = "";
+          opt.textContent = "No match found.";
+          opt.disabled = true;
+          combo.appendChild(opt);
+          return;
+        }
+
+        results.forEach((item, index) => {
+          const opt = document.createElement("option");
+          opt.value = String(index);
+          opt.textContent = `${item.title} - ${item.author} (${sourceLabel(item)})`;
+          combo.appendChild(opt);
+        });
+        combo.selectedIndex = 0;
+      }
+
+      async function fetchSuggestions(query) {
+        if (activeController) {
+          activeController.abort();
+        }
+        activeController = new AbortController();
+        try {
+          const response = await fetch(`${suggestUrl}?q=${encodeURIComponent(query)}`, {
+            signal: activeController.signal,
+          });
+          if (!response.ok) return;
+          lastResults = await response.json();
+          renderComboResults(lastResults);
+          if (lastResults.length > 0) {
+            setHint("Choose a result in the combobox and click Use selected.");
+          } else {
+            setHint("");
+          }
+        } catch (_err) {
+          setHint("");
+        }
+      }
+
+      function useSelectedResult() {
+        const idx = Number(combo.value);
+        if (!Number.isInteger(idx) || idx < 0 || idx >= lastResults.length) {
+          setHint("Select a valid result first.");
+          return;
+        }
+        fillFromBook(lastResults[idx]);
+      }
+
+      findButton.addEventListener("click", () => {
+        const q = (titleInput.value || "").trim();
+        if (q.length < 2) {
+          lastResults = [];
+          renderComboResults(lastResults);
+          setHint("Type at least 2 characters then click Find.");
+          return;
+        }
+        fetchSuggestions(q);
+      });
+
+      useButton.addEventListener("click", useSelectedResult);
+      combo.addEventListener("dblclick", useSelectedResult);
+
+      titleInput.addEventListener("keydown", (event) => {
+        if (event.key === "Enter") {
+          event.preventDefault();
+          findButton.click();
+        }
+      });
+
+      setHint("Type title, click Find, then choose from combobox and Use selected.");
+    })();
+  </script>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 220" role="img" aria-labelledby="title desc">
+  <title id="title">Gymnazium Trhove Sviny logo</title>
+  <desc id="desc">Shield emblem with letters GTS for Grammar School Trhove Sviny.</desc>
+  <defs>
+    <linearGradient id="shieldGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1e5b99"/>
+      <stop offset="1" stop-color="#0d3d72"/>
+    </linearGradient>
+  </defs>
+  <rect width="220" height="220" fill="#ffffff" rx="34"/>
+  <path d="M110 20 L185 52 V104 C185 149 154 186 110 202 C66 186 35 149 35 104 V52 Z" fill="url(#shieldGrad)"/>
+  <path d="M110 31 L173 58 V102 C173 141 147 172 110 187 C73 172 47 141 47 102 V58 Z" fill="none" stroke="#dfeeff" stroke-width="4"/>
+  <circle cx="110" cy="94" r="43" fill="#ffffff"/>
+  <g fill="#0f4a8a" font-family="Merriweather, Georgia, serif" font-weight="700" text-anchor="middle">
+    <text x="110" y="91" font-size="35">GTS</text>
+    <text x="110" y="153" font-size="20" fill="#f4f8ff">1898</text>
+  </g>
+</svg>

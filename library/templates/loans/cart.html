@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}{{ tr('loans.cart_title') }}{% endblock %}
+{% block content %}
+<h1>{{ tr('loans.cart_title') }}</h1>
+
+{% if books %}
+  <table class="data">
+    <thead>
+      <tr>
+        <th>{{ tr('loans.book') }}</th>
+        <th>{{ tr('catalog.availability') }}</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for book in books %}
+        <tr>
+          <td><a href="{{ url_for('catalog.detail', book_id=book.id) }}">{{ book.title }}</a><br /><span class="muted">{{ book.author }}</span></td>
+          <td>
+            {% if book.copies_available > 0 %}
+              <span class="ok">{{ tr('catalog.available_of', available=book.copies_available, total=book.total_copies) }}</span>
+            {% else %}
+              <span class="warn">{{ tr('catalog.all_on_loan') }}</span>
+            {% endif %}
+          </td>
+          <td>
+            <form method="post" action="{{ url_for('loans.cart_remove', book_id=book.id) }}">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+              <button class="btn-link" type="submit">{{ tr('loans.cart_remove') }}</button>
+            </form>
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <form method="post" action="{{ url_for('loans.cart_confirm') }}" style="margin-top:1rem;">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+    <button class="btn primary" type="submit">{{ tr('loans.cart_confirm_btn') }}</button>
+    <a class="btn" href="{{ url_for('catalog.index') }}">{{ tr('loans.cart_continue') }}</a>
+  </form>
+{% else %}
+  <p>{{ tr('loans.cart_empty_msg') }}</p>
+  <a class="btn primary" href="{{ url_for('catalog.index') }}">{{ tr('loans.cart_continue') }}</a>
+{% endif %}
+{% endblock %}

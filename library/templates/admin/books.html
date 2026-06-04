@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}{{ tr('nav.admin') }} · {{ tr('admin.books') }}{% endblock %}
+{% block content %}
+<h1>{{ tr('admin.books') }}</h1>
+<p><a class="btn primary" href="{{ url_for('admin.book_new') }}">+ {{ tr('admin.add_book') }}</a></p>
+<table class="data">
+  <thead><tr><th>{{ tr('admin.col_title') }}</th><th>{{ tr('admin.col_author') }}</th><th>{{ tr('admin.col_category') }}</th><th>{{ tr('admin.col_copies') }}</th><th>{{ tr('admin.col_on_loan') }}</th><th></th></tr></thead>
+  <tbody>
+    {% for b in books %}
+      <tr>
+        <td><a href="{{ url_for('catalog.detail', book_id=b.id) }}">{{ b.title }}</a></td>
+        <td>{{ b.author }}</td>
+        <td>{{ b.category or '' }}</td>
+        <td>{{ b.total_copies }}</td>
+        <td>{{ b.copies_on_loan }}</td>
+        <td>
+          <a href="{{ url_for('admin.book_edit', book_id=b.id) }}">{{ tr('common.edit') }}</a>
+          <form method="post" action="{{ url_for('admin.book_delete', book_id=b.id) }}" style="display:inline">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+            <button class="btn-link" type="submit" onclick="return confirm('{{ tr('admin.delete_book_confirm') }}')">{{ tr('common.delete') }}</button>
+          </form>
+        </td>
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

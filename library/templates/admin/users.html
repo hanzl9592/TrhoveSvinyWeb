@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}{{ tr('nav.admin') }} · {{ tr('admin.users') }}{% endblock %}
+{% block content %}
+<h1>{{ tr('admin.users') }}</h1>
+<p><a class="btn primary" href="{{ url_for('admin.user_new') }}">+ {{ tr('admin.add_user') }}</a></p>
+<table class="data">
+  <thead><tr><th>{{ tr('admin.col_username') }}</th><th>{{ tr('admin.col_name') }}</th><th>{{ tr('common.email') }}</th><th>{{ tr('admin.col_verified') }}</th><th>{{ tr('admin.col_role') }}</th><th>{{ tr('admin.col_joined') }}</th><th>{{ tr('admin.col_actions') }}</th></tr></thead>
+  <tbody>
+    {% for u in users %}
+      <tr>
+        <td>{{ u.username }}</td>
+        <td>{% if u.first_name or u.last_name %}{{ (u.first_name or '') ~ ' ' ~ (u.last_name or '') }}{% else %}—{% endif %}</td>
+        <td>{% if not u.email or u.email.endswith('@local.invalid') %}—{% else %}{{ u.email }}{% endif %}</td>
+        <td>{% if u.is_email_verified %}{{ tr('common.yes') }}{% else %}{{ tr('common.no') }}{% endif %}</td>
+        <td>{{ tr('role.' ~ u.role) }}</td>
+        <td>{{ u.created_at.strftime('%Y-%m-%d') }}</td>
+        <td>
+          <a class="btn" href="{{ url_for('admin.user_edit_role', user_id=u.id) }}">{{ tr('admin.edit_role') }}</a>
+          {% if current_user.id != u.id %}
+            <form method="post" action="{{ url_for('admin.user_delete', user_id=u.id) }}" onsubmit="return confirm('{{ tr('admin.delete_user_confirm') }}');" style="display:inline;">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+              <button class="btn-link" type="submit">{{ tr('admin.delete_user') }}</button>
+            </form>
+          {% else %}
+            —
+          {% endif %}
+        </td>
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

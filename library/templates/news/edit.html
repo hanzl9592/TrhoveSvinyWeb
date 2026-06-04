@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}{{ tr('news.new_announcement') }}{% endblock %}
+{% block content %}
+<h1>{{ tr('news.new_announcement') }}</h1>
+<form method="post" class="form">
+  {{ form.hidden_tag() }}
+  <p>{{ tr('news.form_title') }} {{ form.title(class_="input") }}</p>
+  <p>{{ tr('news.form_body') }}<br /> {{ form.body(class_="input", rows=10) }}</p>
+  <p><button class="btn primary" type="submit">{{ tr('news.form_submit') }}</button></p>
+</form>
+{% endblock %}

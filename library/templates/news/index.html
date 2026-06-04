@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}{{ tr('news.title') }}{% endblock %}
+{% block content %}
+<h1>{{ tr('news.library_news') }}</h1>
+{% if current_user.is_authenticated and current_user.is_admin %}
+  <p><a class="btn primary" href="{{ url_for('news.new_post') }}">+ {{ tr('news.new_announcement') }}</a></p>
+{% endif %}
+{% if posts %}
+  <ul class="news-list big">
+    {% for post in posts %}
+      <li>
+        <h2><a href="{{ url_for('news.detail', post_id=post.id) }}">{{ post.title }}</a></h2>
+        <p class="muted">{{ post.published_at.strftime('%B %d, %Y') }}</p>
+        <p>{{ post.body[:200] }}{% if post.body|length > 200 %}…{% endif %}</p>
+      </li>
+    {% endfor %}
+  </ul>
+{% else %}
+  <p>{{ tr('news.no_announcements') }}</p>
+{% endif %}
+{% endblock %}

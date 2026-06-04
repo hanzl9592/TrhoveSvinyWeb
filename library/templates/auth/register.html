@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}{{ tr('auth.register') }}{% endblock %}
+{% block content %}
+<h1>{{ tr('auth.register') }}</h1>
+<form method="post" class="form narrow">
+  {{ form.hidden_tag() }}
+  <p>{{ tr('auth.field_username') }} {{ form.username(class_="input") }}</p>
+  <p>{{ tr('auth.field_first_name') }} {{ form.first_name(class_="input") }}</p>
+  <p>{{ tr('auth.field_last_name') }} {{ form.last_name(class_="input") }}</p>
+  <p>{{ tr('auth.field_email') }} {{ form.email(class_="input", type="email") }}</p>
+  <p>{{ tr('auth.field_password') }} {{ form.password(class_="input") }}</p>
+  <p>{{ tr('auth.field_confirm') }} {{ form.confirm(class_="input") }}</p>
+  {% for field in [form.username, form.first_name, form.last_name, form.email, form.password, form.confirm] %}
+    {% for err in field.errors %}<p class="error">{{ err }}</p>{% endfor %}
+  {% endfor %}
+  <p><button class="btn primary" type="submit">{{ tr('auth.submit_create') }}</button></p>
+</form>
+{% endblock %}

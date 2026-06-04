@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}{{ post.title }}{% endblock %}
+{% block content %}
+<article>
+  <h1>{{ post.title }}</h1>
+  <p class="muted">{{ post.published_at.strftime('%B %d, %Y') }}
+    {% if post.author %} · {{ tr('news.by_author', username=post.author.username) }}{% endif %}</p>
+  <div class="post-body">
+    {% for para in post.body.split('\n\n') %}<p>{{ para }}</p>{% endfor %}
+  </div>
+  <p><a href="{{ url_for('news.index') }}">← {{ tr('news.back_all') }}</a></p>
+</article>
+{% endblock %}

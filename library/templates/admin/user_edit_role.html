@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}{{ tr('nav.admin') }} · {{ tr('admin.edit_role') }}{% endblock %}
+{% block content %}
+<h1>{{ tr('admin.edit_role') }}: {{ user.username }}</h1>
+{% if user.first_name or user.last_name %}
+  <p class="muted">{{ (user.first_name or '') ~ ' ' ~ (user.last_name or '') }}</p>
+{% endif %}
+<form method="post" class="form narrow">
+  {{ form.hidden_tag() }}
+  <p>{{ tr('admin.form_role') }} {{ form.role(class_="input") }}</p>
+  <p>{{ tr('admin.form_is_admin') }} {{ form.is_admin(class_="input") }}</p>
+  <p>
+    <button class="btn primary" type="submit">{{ tr('common.save') }}</button>
+    <a class="btn" href="{{ url_for('admin.users') }}">{{ tr('common.cancel') }}</a>
+  </p>
+</form>
+{% endblock %}

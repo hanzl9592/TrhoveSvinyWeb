@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}{{ tr('nav.admin') }} · {{ tr('admin.manual_loan') }}{% endblock %}
+{% block content %}
+<h1>{{ tr('admin.manual_loan') }}</h1>
+<form method="post" class="form narrow">
+  {{ form.hidden_tag() }}
+  <p>{{ tr('admin.form_user') }} {{ form.user_id(class_="input") }}</p>
+  <p>{{ tr('admin.form_book') }} {{ form.book_id(class_="input") }}</p>
+  {% for field in [form.user_id, form.book_id] %}
+    {% for err in field.errors %}<p class="error">{{ err }}</p>{% endfor %}
+  {% endfor %}
+  <p><button class="btn primary" type="submit">{{ tr('admin.form_create_loan') }}</button>
+    <a href="{{ url_for('admin.loans') }}">{{ tr('common.cancel') }}</a></p>
+</form>
+{% endblock %}

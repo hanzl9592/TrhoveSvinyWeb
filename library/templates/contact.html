@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}{{ tr('contact.title') }}{% endblock %}
+
+{% block content %}
+<h1>{{ tr('contact.title') }}</h1>
+
+<div class="two-col">
+  <section>
+    <h2>{{ tr('contact.opening_hours') }}</h2>
+    <table class="hours">
+      {% for day, time in hours %}
+        <tr><th>{{ day }}</th><td>{{ time }}</td></tr>
+      {% endfor %}
+    </table>
+  </section>
+
+  <section>
+    <h2>{{ tr('contact.get_in_touch') }}</h2>
+    <p>
+      {{ tr('contact.address_name') }}<br />
+      {{ tr('contact.address_line1') }}<br />
+      {{ tr('contact.address_line2') }}<br />
+    </p>
+    <p>{{ tr('common.email') }}: <a href="mailto:library@school.local">library@school.local</a></p>
+    <p>{{ tr('common.phone') }}: 386 322 742</p>
+  </section>
+</div>
+{% endblock %}

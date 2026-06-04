@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% block title %}{{ tr('home.title') }} · {{ tr('site.name') }}{% endblock %}
+
+{% block content %}
+<section class="hero">
+  <h1>{{ tr('home.hero_title') }}</h1>
+  <p>{{ tr('home.hero_text') }}</p>
+  <form class="search" method="get" action="{{ url_for('catalog.index') }}">
+    <input id="home-search-q" type="search" name="q" placeholder="{{ tr('home.search_placeholder') }}" list="home-search-suggestions" autocomplete="off" />
+    <datalist id="home-search-suggestions"></datalist>
+    <button type="submit">{{ tr('common.search') }}</button>
+  </form>
+</section>
+
+<script>
+  (function () {
+    const input = document.getElementById("home-search-q");
+    const datalist = document.getElementById("home-search-suggestions");
+    if (!input || !datalist) return;
+
+    let timer = null;
+    input.addEventListener("input", () => {
+      const q = (input.value || "").trim();
+      clearTimeout(timer);
+      if (q.length < 2) {
+        datalist.innerHTML = "";
+        return;
+      }
+      timer = setTimeout(async () => {
+        try {
+          const res = await fetch(`{{ url_for('catalog.suggest') }}?q=${encodeURIComponent(q)}`);
+          if (!res.ok) return;
+          const data = await res.json();
+          datalist.innerHTML = "";
+          data.forEach((item) => {
+            const opt = document.createElement("option");
+            opt.value = item.title;
+            opt.label = `${item.title} - ${item.author}`;
+            datalist.appendChild(opt);
+          });
+        } catch (_e) {
+          datalist.innerHTML = "";
+        }
+      }, 180);
+    });
+  })();
+</script>
+
+<section>
+  <h2>{{ tr('home.latest_additions') }}</h2>
+  {% if latest_books %}
+    <div class="grid">
+      {% for book in latest_books %}
+        {% include "catalog/_card.html" %}
+      {% endfor %}
+    </div>
+  {% else %}
+    <p>{{ tr('home.catalog_empty') }}</p>
+  {% endif %}
+</section>
+
+<section>
+  <h2>{{ tr('home.news_title') }}</h2>
+  {% if latest_news %}
+    <ul class="news-list">
+      {% for post in latest_news %}
+        <li>
+          <a href="{{ url_for('news.detail', post_id=post.id) }}">
+            <strong>{{ post.title }}</strong>
+          </a>
+          <span class="muted"> — {{ post.published_at.strftime('%b %d, %Y') }}</span>
+        </li>
+      {% endfor %}
+    </ul>
+    <p><a href="{{ url_for('news.index') }}">{{ tr('home.all_announcements') }} →</a></p>
+  {% else %}
+    <p>{{ tr('home.no_announcements') }}</p>
+  {% endif %}
+</section>
+{% endblock %}

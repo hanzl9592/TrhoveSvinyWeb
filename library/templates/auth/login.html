@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}{{ tr('auth.sign_in') }}{% endblock %}
+{% block content %}
+<h1>{{ tr('auth.sign_in') }}</h1>
+<form method="post" class="form narrow">
+  {{ form.hidden_tag() }}
+  <p>{{ tr('auth.field_username') }} {{ form.username(class_="input") }}</p>
+  <p>{{ tr('auth.field_password') }} {{ form.password(class_="input") }}</p>
+  {% for field in [form.username, form.password] %}
+    {% for err in field.errors %}<p class="error">{{ err }}</p>{% endfor %}
+  {% endfor %}
+  <p><button class="btn primary" type="submit">{{ tr('auth.sign_in') }}</button></p>
+</form>
+<p><a href="{{ url_for('auth.forgot_password') }}">{{ tr('auth.forgot_password') }}</a></p>
+<p>{{ tr('auth.no_account') }} <a href="{{ url_for('auth.register') }}">{{ tr('nav.register') }}</a>.</p>
+{% endblock %}
