@@ -11,27 +11,6 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
 </head>
 <body>
-  <div class="topbar">
-    <div class="container topbar-inner">
-      <span class="topbar-links">
-        <span>
-          {{ tr('lang.label') }}:
-          <a href="{{ url_for('main.set_language', lang='en') }}">{{ tr('lang.en') }}</a>
-          /
-          <a href="{{ url_for('main.set_language', lang='cs') }}">{{ tr('lang.cs') }}</a>
-        </span>
-        {% if current_user.is_authenticated %}
-          <span class="user">{{ tr('topbar.hello') }}, <strong>{% if current_user.first_name or current_user.last_name %}{{ (current_user.first_name or '') ~ ' ' ~ (current_user.last_name or '') }}{% else %}{{ current_user.username }}{% endif %}</strong></span>
-          <a href="{{ url_for('loans.my_loans') }}">{{ tr('nav.my_loans') }}</a>
-          <a href="{{ url_for('auth.logout') }}">{{ tr('nav.sign_out') }}</a>
-        {% else %}
-          <a href="{{ url_for('auth.login') }}">{{ tr('nav.sign_in') }}</a>
-          <a href="{{ url_for('auth.register') }}">{{ tr('nav.register') }}</a>
-        {% endif %}
-      </span>
-    </div>
-  </div>
-
   <section class="promo-gallery" data-gallery>
     <div class="promo-stage">
       <nav class="mainnav">
@@ -62,7 +41,29 @@
             {% endif %}
           </div>
           <div class="nav-tools">
-            <div class="nav-contact">📞 386 322 742 &nbsp;·&nbsp; ✉ library@school.local</div>
+            <details class="lang-menu">
+              <summary>
+                <img class="lang-flag" src="{{ url_for('static', filename='img/icons/flag-en.svg') }}" alt="English" />
+                <span>{{ tr('lang.en') }}</span>
+              </summary>
+              <div class="lang-dropdown" role="menu" aria-label="Language switcher">
+                <a role="menuitem" href="{{ url_for('main.set_language', lang='cs') }}">{{ tr('lang.cs') }}</a>
+                <a role="menuitem" href="{{ url_for('main.set_language', lang='en') }}">{{ tr('lang.en') }}</a>
+              </div>
+            </details>
+            <details class="account-menu">
+              <summary>My account</summary>
+              <div class="account-dropdown" role="menu" aria-label="My account">
+                {% if current_user.is_authenticated %}
+                  <a role="menuitem" href="{{ url_for('loans.my_loans') }}">{{ tr('nav.my_loans') }}</a>
+                  <a role="menuitem" href="{{ url_for('auth.logout') }}">{{ tr('nav.sign_out') }}</a>
+                {% else %}
+                  <a role="menuitem" href="{{ url_for('auth.register') }}">{{ tr('nav.register') }}</a>
+                  <a role="menuitem" href="{{ url_for('auth.login') }}">{{ tr('nav.sign_in') }}</a>
+                  <a role="menuitem" href="{{ url_for('auth.forgot_password') }}">{{ tr('auth.forgot_password') }}</a>
+                {% endif %}
+              </div>
+            </details>
           </div>
         </div>
       </nav>
@@ -72,8 +73,8 @@
       </button>
       <img
         class="promo-main"
-        src="{{ url_for('static', filename='img/Library.jpg') }}"
-        alt="Library"
+        src="{{ main_gallery_images[0].src }}"
+        alt="{{ main_gallery_images[0].alt }}"
         data-gallery-main
       />
       <button class="promo-nav next" type="button" aria-label="Next image" data-gallery-next>
@@ -117,7 +118,10 @@
       </div>
     </div>
     <div class="footer-bottom">
-      <div class="container">© {{ 2026 }} {{ tr('site.name') }}. {{ tr('footer.all_rights') }}</div>
+      <div class="container">
+        <span>© {{ 2026 }} {{ tr('site.name') }}. {{ tr('footer.all_rights') }}</span>
+        <span class="footer-contact-inline">📞 386 322 742 · ✉ library@school.local</span>
+      </div>
     </div>
   </footer>
 
@@ -129,16 +133,7 @@
       const mainImage = gallery.querySelector("[data-gallery-main]");
       const prevButton = gallery.querySelector("[data-gallery-prev]");
       const nextButton = gallery.querySelector("[data-gallery-next]");
-      const images = [
-        {
-          src: "{{ url_for('static', filename='img/Library.jpg') }}",
-          alt: "Library",
-        },
-        {
-          src: "{{ url_for('static', filename='img/Library2.jpg') }}",
-          alt: "Library 2",
-        },
-      ];
+      const images = {{ main_gallery_images | tojson }};
 
       let currentIndex = 0;
 

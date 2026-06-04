@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 40" role="img" aria-label="English flag">
+  <rect width="60" height="40" fill="#012169"/>
+  <path d="M0 0 L24 16 H16 L0 5 Z M60 0 L36 16 H44 L60 5 Z M0 40 L24 24 H16 L0 35 Z M60 40 L36 24 H44 L60 35 Z" fill="#FFFFFF"/>
+  <path d="M0 0 L20 13 H16 L0 3 Z M60 0 L40 13 H44 L60 3 Z M0 40 L20 27 H16 L0 37 Z M60 40 L40 27 H44 L60 37 Z" fill="#C8102E"/>
+  <rect x="24" width="12" height="40" fill="#FFFFFF"/>
+  <rect y="14" width="60" height="12" fill="#FFFFFF"/>
+  <rect x="26" width="8" height="40" fill="#C8102E"/>
+  <rect y="16" width="60" height="8" fill="#C8102E"/>
+</svg>

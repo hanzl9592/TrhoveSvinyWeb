@@ -2,7 +2,8 @@
 from __future__ import annotations
 
 import os
-from flask import Flask
+from pathlib import Path
+from flask import Flask, url_for
 from flask_login import LoginManager
 from flask_sqlalchemy import SQLAlchemy
 from flask_wtf.csrf import CSRFProtect
@@ -18,6 +19,42 @@ login_manager = LoginManager()
 csrf = CSRFProtect()
 login_manager.login_view = "auth.login"
 login_manager.login_message_category = "info"
+
+
+def _get_gallery_images(app: Flask) -> list[dict[str, str]]:
+    """Return homepage gallery images from static/img/main with a safe fallback."""
+    static_root = Path(app.static_folder or "")
+    gallery_root = static_root / "img" / "main"
+    allowed_suffixes = {".jpg", ".jpeg", ".png", ".webp", ".gif"}
+    images: list[dict[str, str]] = []
+
+    if gallery_root.exists():
+        for file_path in sorted(gallery_root.iterdir(), key=lambda item: item.name.lower()):
+            if not file_path.is_file() or file_path.suffix.lower() not in allowed_suffixes:
+                continue
+            relative_path = file_path.relative_to(static_root).as_posix()
+            alt_text = file_path.stem.replace("_", " ").replace("-", " ").strip() or "Library"
+            images.append(
+                {
+                    "src": url_for("static", filename=relative_path),
+                    "alt": alt_text,
+                }
+            )
+
+    if images:
+        return images
+
+    # Fallback keeps homepage slider working when folder is empty.
+    return [
+        {
+            "src": url_for("static", filename="img/Library.jpg"),
+            "alt": "Library",
+        },
+        {
+            "src": url_for("static", filename="img/Library2.jpg"),
+            "alt": "Library 2",
+        },
+    ]
 
 
 def _ensure_schema_upgrades(app: Flask) -> None:
@@ -162,6 +199,10 @@ def create_app(config: dict | None = None) -> Flask:
     app.register_blueprint(loans_bp, url_prefix="/loans")
     app.register_blueprint(news_bp, url_prefix="/news")
     app.register_blueprint(admin_bp, url_prefix="/admin")
+
+    @app.context_processor
+    def inject_main_gallery_images():
+        return {"main_gallery_images": _get_gallery_images(app)}
 
     with app.app_context():
         db.create_all()

@@ -538,12 +538,12 @@ TRANSLATIONS = {
 
 def get_lang() -> str:
     if not has_request_context():
-        return "en"
+        return "cs"
     lang = session.get("lang")
     if lang in SUPPORTED_LANGS:
         return lang
     best = request.accept_languages.best_match(list(SUPPORTED_LANGS.keys()))
-    return best or "en"
+    return best or "cs"
 
 
 def tr(key: str, **kwargs) -> str:
