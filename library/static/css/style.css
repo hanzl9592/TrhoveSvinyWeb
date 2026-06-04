@@ -956,13 +956,13 @@ button[disabled],
   }
 
   .topbar-inner {
-    justify-content: center;
+    justify-content: space-between;
     padding: 0.35rem 0.75rem;
-    text-align: center;
+    text-align: left;
   }
 
   .topbar .topbar-links {
-    justify-content: center;
+    justify-content: space-between;
     gap: 0.55rem;
   }
 
@@ -977,9 +977,9 @@ button[disabled],
   }
 
   .account-dropdown {
-    left: 50%;
-    right: auto;
-    transform: translateX(-50%);
+    left: auto;
+    right: 0;
+    transform: none;
   }
 
   .mainnav .nav-links {
@@ -1025,19 +1025,24 @@ button[disabled],
 
   .topbar-inner {
     min-height: auto;
-    gap: 0.35rem;
-    flex-direction: column;
+    gap: 0.5rem;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
   }
 
   .topbar .topbar-links {
-    flex-direction: column;
-    gap: 0.35rem;
+    flex-direction: row;
+    gap: 0.5rem;
+    width: 100%;
+    align-items: center;
+    justify-content: space-between;
   }
 
   .topbar .topbar-links > span {
     display: inline-flex;
     flex-wrap: wrap;
-    justify-content: center;
+    justify-content: flex-start;
     gap: 0.25rem;
   }
 
