@@ -930,16 +930,21 @@ button[disabled],
   }
 
   .mainnav-inner {
-    flex-wrap: wrap;
-    align-items: flex-start;
-    row-gap: 0.35rem;
-    padding-block: 0.35rem;
+    flex-wrap: nowrap;
+    align-items: center;
+    row-gap: 0;
+    padding-block: 0.45rem;
   }
 
   .mainnav .nav-links {
-    order: 3;
-    width: 100%;
-    justify-content: center;
+    order: 1;
+    width: auto;
+    justify-content: flex-start;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: thin;
+    -webkit-overflow-scrolling: touch;
   }
 
   .mainnav .nav-tools {
@@ -982,16 +987,11 @@ button[disabled],
     transform: none;
   }
 
-  .mainnav .nav-links {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    width: 100%;
-    gap: 0.4rem;
-  }
-
   .mainnav .nav-links > a {
-    width: 100%;
+    width: auto;
+    flex: 0 0 auto;
     justify-content: center;
+    white-space: nowrap;
   }
 
   .mainnav .nav-tools {
@@ -1065,6 +1065,10 @@ button[disabled],
     padding-block: 0.45rem;
   }
 
+  .mainnav .nav-links {
+    gap: 0.35rem;
+  }
+
   .mainnav .nav-brand {
     margin-left: 0.35rem;
     margin-right: 0.35rem;
@@ -1097,8 +1101,8 @@ button[disabled],
   }
 
   .promo-main {
-    height: 48vw;
-    min-height: 220px;
+    height: clamp(250px, 62vw, 420px);
+    min-height: 250px;
   }
 
   .promo-nav {
