@@ -147,8 +147,7 @@ def login():
                 return redirect(next_url)
             if user.is_admin:
                 flash(tr("auth.admin_mode"), "info")
-                return redirect(url_for("admin.dashboard"))
-            return redirect(url_for("main.index"))
+            return redirect(url_for("catalog.index"))
         flash(tr("auth.invalid_credentials"), "danger")
     return render_template("auth/login.html", form=form)
 

@@ -26,7 +26,7 @@
         </details>
 
         <details class="account-menu">
-          <summary>My account</summary>
+          <summary>{{ tr('nav.sign_in') }}</summary>
           <div class="account-dropdown" role="menu" aria-label="My account">
             {% if current_user.is_authenticated %}
               <a role="menuitem" href="{{ url_for('loans.my_loans') }}">{{ tr('nav.my_loans') }}</a>
@@ -53,7 +53,20 @@
               <span class="brand-sub">{{ tr('site.org') }}</span>
             </span>
           </a>
-          <div class="nav-links">
+          <button
+            class="nav-toggle"
+            type="button"
+            aria-label="Toggle navigation menu"
+            aria-expanded="false"
+            aria-controls="main-nav-links"
+          >
+            <span class="nav-toggle-icon" aria-hidden="true">
+              <span></span>
+              <span></span>
+              <span></span>
+            </span>
+          </button>
+          <div class="nav-links" id="main-nav-links">
             <a href="{{ url_for('main.index') }}">{{ tr('nav.home') }}</a>
             <a href="{{ url_for('catalog.index') }}">{{ tr('nav.catalog') }}</a>
             <a href="{{ url_for('news.index') }}">{{ tr('nav.news') }}</a>
@@ -139,9 +152,19 @@
       const mainImage = gallery.querySelector("[data-gallery-main]");
       const prevButton = gallery.querySelector("[data-gallery-prev]");
       const nextButton = gallery.querySelector("[data-gallery-next]");
+      const mainNav = gallery.querySelector(".mainnav");
+      const navToggle = gallery.querySelector(".nav-toggle");
       const images = {{ main_gallery_images | tojson }};
 
       let currentIndex = 0;
+
+      function syncOverlayLimit() {
+        if (!mainNav) return;
+        const navHeight = Math.ceil(mainNav.getBoundingClientRect().height || 0);
+        if (navHeight > 0) {
+          gallery.style.setProperty("--nav-overlay-height", `${navHeight}px`);
+        }
+      }
 
       function render(index) {
         const image = images[index];
@@ -153,6 +176,38 @@
       function step(direction) {
         currentIndex = (currentIndex + direction + images.length) % images.length;
         render(currentIndex);
+      }
+
+      function setMenuOpen(isOpen) {
+        if (!mainNav || !navToggle) return;
+        mainNav.classList.toggle("menu-open", isOpen);
+        navToggle.setAttribute("aria-expanded", String(isOpen));
+      }
+
+      navToggle?.addEventListener("click", () => {
+        const currentlyOpen = mainNav?.classList.contains("menu-open") || false;
+        setMenuOpen(!currentlyOpen);
+      });
+
+      document.addEventListener("click", (event) => {
+        if (!mainNav) return;
+        const target = event.target;
+        if (target instanceof Node && !mainNav.contains(target)) {
+          setMenuOpen(false);
+        }
+      });
+
+      document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape") {
+          setMenuOpen(false);
+        }
+      });
+
+      syncOverlayLimit();
+      window.addEventListener("resize", syncOverlayLimit);
+      if (window.ResizeObserver && mainNav) {
+        const navObserver = new ResizeObserver(syncOverlayLimit);
+        navObserver.observe(mainNav);
       }
 
       prevButton?.addEventListener("click", () => step(-1));
