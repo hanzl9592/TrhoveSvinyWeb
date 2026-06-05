@@ -109,6 +109,10 @@ table {
   position: relative;
 }
 
+.topbar .lang-menu {
+  margin-left: auto;
+}
+
 .lang-menu summary {
   list-style: none;
   cursor: pointer;
@@ -341,6 +345,10 @@ table {
   padding-right: 0;
   flex: 0 0 auto;
 }
+.mainnav .nav-toggle {
+  margin-left: auto;
+  margin-right: 0.45rem;
+}
 
 .mainnav .nav-links {
   position: absolute;
@@ -363,8 +371,7 @@ table {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  margin-left: auto;
-  margin-right: 0.35rem;
+  margin: 0;
   width: 3.2rem;
   min-height: 3.2rem;
   padding: 0;
@@ -1131,6 +1138,11 @@ button[disabled],
   .nav-toggle {
     min-height: 2.9rem;
     width: 3rem;
+  }
+
+  .topbar .nav-toggle {
+    min-height: 2.4rem;
+    width: 2.7rem;
   }
 
   .mainnav .nav-links {

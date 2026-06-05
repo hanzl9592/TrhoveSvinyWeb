@@ -153,7 +153,7 @@
       const prevButton = gallery.querySelector("[data-gallery-prev]");
       const nextButton = gallery.querySelector("[data-gallery-next]");
       const mainNav = gallery.querySelector(".mainnav");
-      const navToggle = gallery.querySelector(".nav-toggle");
+      const navToggle = gallery.querySelector(".mainnav .nav-toggle");
       const images = {{ main_gallery_images | tojson }};
 
       let currentIndex = 0;
@@ -192,7 +192,9 @@
       document.addEventListener("click", (event) => {
         if (!mainNav) return;
         const target = event.target;
-        if (target instanceof Node && !mainNav.contains(target)) {
+        const clickedInsideNav = target instanceof Node && mainNav.contains(target);
+        const clickedToggle = target instanceof Node && navToggle?.contains(target);
+        if (!clickedInsideNav && !clickedToggle) {
           setMenuOpen(false);
         }
       });
