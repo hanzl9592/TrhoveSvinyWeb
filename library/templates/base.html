@@ -26,9 +26,18 @@
         </details>
 
         <details class="account-menu">
-          <summary>{{ tr('nav.sign_in') }}</summary>
+          <summary>
+            {% if current_user.is_authenticated %}
+              {{ tr('topbar.hello') }}, {{ current_user.first_name or current_user.username }}
+            {% else %}
+              {{ tr('nav.sign_in') }}
+            {% endif %}
+          </summary>
           <div class="account-dropdown" role="menu" aria-label="My account">
             {% if current_user.is_authenticated %}
+              {% if current_user.is_admin %}
+                <a role="menuitem" href="{{ url_for('admin.dashboard') }}">{{ tr('admin.dashboard') }}</a>
+              {% endif %}
               <a role="menuitem" href="{{ url_for('loans.my_loans') }}">{{ tr('nav.my_loans') }}</a>
               <a role="menuitem" href="{{ url_for('auth.logout') }}">{{ tr('nav.sign_out') }}</a>
             {% else %}
@@ -156,6 +165,8 @@
       const mainNav = gallery.querySelector(".mainnav");
       const navMenuPanel = mainNav?.querySelector("#main-nav-links");
       const navToggle = document.querySelector(".topbar .nav-toggle");
+      const langMenu = document.querySelector(".topbar .lang-menu");
+      const accountMenu = document.querySelector(".topbar .account-menu");
       const images = {{ main_gallery_images | tojson }};
 
       let currentIndex = 0;
@@ -207,13 +218,25 @@
       navToggle?.addEventListener("click", () => {
         const currentlyOpen = mainNav?.classList.contains("menu-open") || false;
         setMenuOpen(!currentlyOpen);
+        langMenu?.removeAttribute("open");
+        accountMenu?.removeAttribute("open");
       });
 
       document.addEventListener("click", (event) => {
-        if (!mainNav) return;
         const target = event.target;
-        const clickedInsideNav = target instanceof Node && mainNav.contains(target);
-        const clickedToggle = target instanceof Node && navToggle?.contains(target);
+        if (!(target instanceof Node)) return;
+
+        const clickedLangMenu = !!langMenu?.contains(target);
+        const clickedAccountMenu = !!accountMenu?.contains(target);
+        if (!clickedLangMenu) {
+          langMenu?.removeAttribute("open");
+        }
+        if (!clickedAccountMenu) {
+          accountMenu?.removeAttribute("open");
+        }
+
+        const clickedInsideNav = !!mainNav?.contains(target);
+        const clickedToggle = !!navToggle?.contains(target);
         if (!clickedInsideNav && !clickedToggle) {
           setMenuOpen(false);
         }
@@ -222,6 +245,8 @@
       document.addEventListener("keydown", (event) => {
         if (event.key === "Escape") {
           setMenuOpen(false);
+          langMenu?.removeAttribute("open");
+          accountMenu?.removeAttribute("open");
         }
       });
 

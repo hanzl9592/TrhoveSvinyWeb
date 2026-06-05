@@ -63,6 +63,9 @@ def _get_gallery_images(app: Flask) -> list[dict[str, str]]:
 def _ensure_schema_upgrades(app: Flask) -> None:
     """Apply lightweight runtime schema upgrades for SQLite deployments."""
     with app.app_context():
+        if db.engine.dialect.name != "sqlite":
+            return
+
         inspector = db.inspect(db.engine)
         if "users" not in inspector.get_table_names():
             return
@@ -182,10 +185,16 @@ def create_app(config: dict | None = None) -> Flask:
 
     app = Flask(__name__, instance_relative_config=True)
 
+    default_sqlite_uri = "sqlite:///" + os.path.join(app.instance_path, "library.db")
+    database_uri = (
+        os.environ.get("SQLALCHEMY_DATABASE_URI")
+        or os.environ.get("DATABASE_URL")
+        or default_sqlite_uri
+    )
+
     app.config.from_mapping(
         SECRET_KEY=os.environ.get("SECRET_KEY", "dev-change-me"),
-        SQLALCHEMY_DATABASE_URI="sqlite:///"
-        + os.path.join(app.instance_path, "library.db"),
+        SQLALCHEMY_DATABASE_URI=database_uri,
         SQLALCHEMY_TRACK_MODIFICATIONS=False,
         MAIL_SERVER=os.environ.get("MAIL_SERVER", "live.smtp.mailtrap.io"),
         MAIL_PORT=int(os.environ.get("MAIL_PORT", "587")),
