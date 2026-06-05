@@ -38,6 +38,20 @@
             {% endif %}
           </div>
         </details>
+
+        <button
+          class="nav-toggle"
+          type="button"
+          aria-label="Toggle navigation menu"
+          aria-expanded="false"
+          aria-controls="main-nav-links"
+        >
+          <span class="nav-toggle-icon" aria-hidden="true">
+            <span></span>
+            <span></span>
+            <span></span>
+          </span>
+        </button>
       </div>
     </div>
   </div>
@@ -53,19 +67,6 @@
               <span class="brand-sub">{{ tr('site.org') }}</span>
             </span>
           </a>
-          <button
-            class="nav-toggle"
-            type="button"
-            aria-label="Toggle navigation menu"
-            aria-expanded="false"
-            aria-controls="main-nav-links"
-          >
-            <span class="nav-toggle-icon" aria-hidden="true">
-              <span></span>
-              <span></span>
-              <span></span>
-            </span>
-          </button>
           <div class="nav-links" id="main-nav-links">
             <a href="{{ url_for('main.index') }}">{{ tr('nav.home') }}</a>
             <a href="{{ url_for('catalog.index') }}">{{ tr('nav.catalog') }}</a>
@@ -153,7 +154,8 @@
       const prevButton = gallery.querySelector("[data-gallery-prev]");
       const nextButton = gallery.querySelector("[data-gallery-next]");
       const mainNav = gallery.querySelector(".mainnav");
-      const navToggle = gallery.querySelector(".mainnav .nav-toggle");
+      const navMenuPanel = mainNav?.querySelector("#main-nav-links");
+      const navToggle = document.querySelector(".topbar .nav-toggle");
       const images = {{ main_gallery_images | tojson }};
 
       let currentIndex = 0;
@@ -178,10 +180,28 @@
         render(currentIndex);
       }
 
+      function positionMenuPanel() {
+        if (!mainNav || !navToggle || !navMenuPanel) return;
+        const toggleRect = navToggle.getBoundingClientRect();
+        const panelRect = navMenuPanel.getBoundingClientRect();
+        const panelWidth = panelRect.width || Math.min(window.innerWidth * 0.92, 340);
+        const margin = 8;
+        const left = Math.min(
+          Math.max(toggleRect.right - panelWidth, margin),
+          window.innerWidth - panelWidth - margin,
+        );
+        const top = toggleRect.bottom + 6;
+        mainNav.style.setProperty("--menu-panel-left", `${left}px`);
+        mainNav.style.setProperty("--menu-panel-top", `${top}px`);
+      }
+
       function setMenuOpen(isOpen) {
         if (!mainNav || !navToggle) return;
         mainNav.classList.toggle("menu-open", isOpen);
         navToggle.setAttribute("aria-expanded", String(isOpen));
+        if (isOpen) {
+          requestAnimationFrame(positionMenuPanel);
+        }
       }
 
       navToggle?.addEventListener("click", () => {
@@ -204,6 +224,18 @@
           setMenuOpen(false);
         }
       });
+
+      window.addEventListener("resize", () => {
+        if (mainNav?.classList.contains("menu-open")) {
+          positionMenuPanel();
+        }
+      });
+
+      window.addEventListener("scroll", () => {
+        if (mainNav?.classList.contains("menu-open")) {
+          positionMenuPanel();
+        }
+      }, { passive: true });
 
       syncOverlayLimit();
       window.addEventListener("resize", syncOverlayLimit);
