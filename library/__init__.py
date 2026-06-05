@@ -185,12 +185,25 @@ def create_app(config: dict | None = None) -> Flask:
 
     app = Flask(__name__, instance_relative_config=True)
 
-    default_sqlite_uri = "sqlite:///" + os.path.join(app.instance_path, "library.db")
-    database_uri = (
+    env_database_uri = (
         os.environ.get("SQLALCHEMY_DATABASE_URI")
         or os.environ.get("DATABASE_URL")
-        or default_sqlite_uri
+        or ""
+    ).strip()
+    # Render may expose either RENDER=true or a service id env var.
+    is_hosted = os.environ.get("RENDER") == "true" or bool(
+        os.environ.get("RENDER_SERVICE_ID")
     )
+    if is_hosted and not env_database_uri:
+        raise RuntimeError(
+            "DATABASE_URL (or SQLALCHEMY_DATABASE_URI) is required on hosted deployments."
+        )
+
+    if env_database_uri.startswith("postgres://"):
+        env_database_uri = "postgresql://" + env_database_uri[len("postgres://") :]
+
+    default_sqlite_uri = "sqlite:///" + os.path.join(app.instance_path, "library.db")
+    database_uri = env_database_uri or default_sqlite_uri
 
     app.config.from_mapping(
         SECRET_KEY=os.environ.get("SECRET_KEY", "dev-change-me"),

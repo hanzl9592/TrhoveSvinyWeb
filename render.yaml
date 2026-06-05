@@ -1,6 +1,18 @@
+databases:
+  - name: ts-library-app-db
+    databaseName: tslibrary_db
+    user: tslibrary
+
 services:
   - type: web
     name: TrhoveSvinyWeb
     env: python
     buildCommand: python3 -m venv .venv && ./.venv/bin/pip install -r requirements.txt
     startCommand: ./.venv/bin/gunicorn run:app --bind 0.0.0.0:$PORT
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: ts-library-app-db
+          property: connectionString
+      - key: SECRET_KEY
+        generateValue: true
