@@ -73,6 +73,8 @@ table {
   background: #ffffff;
   border-bottom: 1px solid var(--line);
   font-size: 0.93rem;
+  position: relative;
+  z-index: 1600;
 }
 
 .topbar-inner {
@@ -169,7 +171,7 @@ table {
   padding: 0.35rem;
   display: grid;
   gap: 0.2rem;
-  z-index: 30;
+  z-index: 1700;
 }
 
 .lang-dropdown a {
@@ -247,7 +249,7 @@ table {
   padding: 0.35rem;
   display: grid;
   gap: 0.2rem;
-  z-index: 30;
+  z-index: 1700;
 }
 
 .account-dropdown a {
