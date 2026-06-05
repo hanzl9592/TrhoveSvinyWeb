@@ -80,24 +80,36 @@ def _send_plain_email(to_email: str, subject: str, body: str) -> bool:
     password = current_app.config.get("MAIL_PASSWORD", "")
 
     timeout_seconds = float(current_app.config.get("MAIL_TIMEOUT_SECONDS", 8))
+    ports_to_try = [port]
+    # 2525 is often allowed where 587 is restricted; keep configured port first.
+    if server.endswith("mailtrap.io") and port != 2525:
+        ports_to_try.append(2525)
 
-    try:
-        with smtplib.SMTP(server, port, timeout=timeout_seconds) as smtp:
-            if use_tls:
-                smtp.starttls()
-            if username:
-                smtp.login(username, password)
-            smtp.send_message(msg)
-        return True
-    except Exception:
-        return False
+    for current_port in ports_to_try:
+        try:
+            with smtplib.SMTP(server, current_port, timeout=timeout_seconds) as smtp:
+                if use_tls:
+                    smtp.starttls()
+                if username:
+                    smtp.login(username, password)
+                smtp.send_message(msg)
+            return True
+        except Exception as exc:
+            current_app.logger.warning(
+                "SMTP send failed [MAIL-SMTP-01] server=%s port=%s err=%s",
+                server,
+                current_port,
+                exc,
+            )
+
+    current_app.logger.warning("SMTP send exhausted retries [MAIL-SMTP-02]")
+    return False
 
 
-def _send_with_timeout(send_func, *args, **kwargs) -> bool:
-    """Run outbound mail step with a hard timeout to avoid request worker timeouts."""
+def _send_with_timeout(send_fn, *args) -> bool:
     timeout_seconds = float(current_app.config.get("MAIL_SEND_STEP_TIMEOUT_SECONDS", 10))
     executor = ThreadPoolExecutor(max_workers=1)
-    future = executor.submit(send_func, *args, **kwargs)
+    future = executor.submit(send_fn, *args)
     try:
         return bool(future.result(timeout=timeout_seconds))
     except FuturesTimeoutError:

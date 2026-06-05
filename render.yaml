@@ -19,7 +19,7 @@ services:
       - key: MAIL_SERVER
         value: sandbox.smtp.mailtrap.io
       - key: MAIL_PORT
-        value: "587"
+        value: "2525"
       - key: MAIL_USE_TLS
         value: "1"
       - key: MAIL_USERNAME
