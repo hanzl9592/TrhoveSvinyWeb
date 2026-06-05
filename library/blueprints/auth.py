@@ -187,17 +187,28 @@ def register():
                 db.session.commit()
             except SQLAlchemyError:
                 db.session.rollback()
-                flash(tr("auth.account_create_failed"), "danger")
+                current_app.logger.exception("Registration failed at DB commit [REG-DB-01]")
+                flash(tr("auth.account_create_failed", code="REG-DB-01"), "danger")
                 return render_template("auth/register.html", form=form)
 
-            verify_link = url_for("auth.verify_email", token=token, _external=True)
-            if _send_verification_email(email, verify_link):
-                flash(tr("auth.verify_email_sent"), "success")
-            else:
-                flash(tr("auth.verify_email_fallback", link=verify_link), "warning")
+            try:
+                verify_link = url_for("auth.verify_email", token=token, _external=True)
+                if _send_verification_email(email, verify_link):
+                    flash(tr("auth.verify_email_sent"), "success")
+                else:
+                    flash(tr("auth.verify_email_fallback", link=verify_link), "warning")
+                    flash(tr("auth.verify_email_issue", code="REG-MAIL-01"), "warning")
 
-            flash(tr("auth.account_created"), "success")
-            return redirect(url_for("auth.login"))
+                flash(tr("auth.account_created"), "success")
+                return redirect(url_for("auth.login"))
+            except Exception:
+                # Account is already created; only the follow-up step failed.
+                current_app.logger.exception(
+                    "Registration completed but follow-up failed [REG-AFTER-01]"
+                )
+                flash(tr("auth.account_created"), "success")
+                flash(tr("auth.registration_followup_issue", code="REG-AFTER-01"), "warning")
+                return redirect(url_for("auth.login"))
     return render_template("auth/register.html", form=form)
 
 
