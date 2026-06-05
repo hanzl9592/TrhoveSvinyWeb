@@ -158,57 +158,62 @@ def register():
     if current_user.is_authenticated:
         return redirect(url_for("main.index"))
     form = RegisterForm()
-    if form.validate_on_submit():
-        username = (form.username.data or "").strip()
-        first_name = (form.first_name.data or "").strip()
-        last_name = (form.last_name.data or "").strip()
-        email = (form.email.data or "").strip().lower()
+    try:
+        if form.validate_on_submit():
+            username = (form.username.data or "").strip()
+            first_name = (form.first_name.data or "").strip()
+            last_name = (form.last_name.data or "").strip()
+            email = (form.email.data or "").strip().lower()
 
-        if User.query.filter_by(username=username).first():
-            flash(tr("auth.username_taken"), "warning")
-        elif User.query.filter_by(email=email).first():
-            flash(tr("auth.email_taken"), "warning")
-        else:
-            token = _generate_token()
-            ttl_hours = int(current_app.config.get("EMAIL_VERIFICATION_TOKEN_TTL_HOURS", 24))
-            user = User(
-                username=username,
-                first_name=first_name,
-                last_name=last_name,
-                email=email,
-                role="student",
-                is_email_verified=False,
-                email_verification_token=token,
-                email_verification_expires_at=datetime.utcnow() + timedelta(hours=ttl_hours),
-            )
-            user.set_password(form.password.data)
-            db.session.add(user)
-            try:
-                db.session.commit()
-            except SQLAlchemyError:
-                db.session.rollback()
-                current_app.logger.exception("Registration failed at DB commit [REG-DB-01]")
-                flash(tr("auth.account_create_failed", code="REG-DB-01"), "danger")
-                return render_template("auth/register.html", form=form)
-
-            try:
-                verify_link = url_for("auth.verify_email", token=token, _external=True)
-                if _send_verification_email(email, verify_link):
-                    flash(tr("auth.verify_email_sent"), "success")
-                else:
-                    flash(tr("auth.verify_email_fallback", link=verify_link), "warning")
-                    flash(tr("auth.verify_email_issue", code="REG-MAIL-01"), "warning")
-
-                flash(tr("auth.account_created"), "success")
-                return redirect(url_for("auth.login"))
-            except Exception:
-                # Account is already created; only the follow-up step failed.
-                current_app.logger.exception(
-                    "Registration completed but follow-up failed [REG-AFTER-01]"
+            if User.query.filter_by(username=username).first():
+                flash(tr("auth.username_taken"), "warning")
+            elif User.query.filter_by(email=email).first():
+                flash(tr("auth.email_taken"), "warning")
+            else:
+                token = _generate_token()
+                ttl_hours = int(current_app.config.get("EMAIL_VERIFICATION_TOKEN_TTL_HOURS", 24))
+                user = User(
+                    username=username,
+                    first_name=first_name,
+                    last_name=last_name,
+                    email=email,
+                    role="student",
+                    is_email_verified=False,
+                    email_verification_token=token,
+                    email_verification_expires_at=datetime.utcnow() + timedelta(hours=ttl_hours),
                 )
-                flash(tr("auth.account_created"), "success")
-                flash(tr("auth.registration_followup_issue", code="REG-AFTER-01"), "warning")
-                return redirect(url_for("auth.login"))
+                user.set_password(form.password.data)
+                db.session.add(user)
+                try:
+                    db.session.commit()
+                except SQLAlchemyError:
+                    db.session.rollback()
+                    current_app.logger.exception("Registration failed at DB commit [REG-DB-01]")
+                    flash(tr("auth.account_create_failed", code="REG-DB-01"), "danger")
+                    return render_template("auth/register.html", form=form)
+
+                try:
+                    verify_link = url_for("auth.verify_email", token=token, _external=True)
+                    if _send_verification_email(email, verify_link):
+                        flash(tr("auth.verify_email_sent"), "success")
+                    else:
+                        flash(tr("auth.verify_email_fallback", link=verify_link), "warning")
+                        flash(tr("auth.verify_email_issue", code="REG-MAIL-01"), "warning")
+
+                    flash(tr("auth.account_created"), "success")
+                    return redirect(url_for("auth.login"))
+                except Exception:
+                    # Account is already created; only the follow-up step failed.
+                    current_app.logger.exception(
+                        "Registration completed but follow-up failed [REG-AFTER-01]"
+                    )
+                    flash(tr("auth.account_created"), "success")
+                    flash(tr("auth.registration_followup_issue", code="REG-AFTER-01"), "warning")
+                    return redirect(url_for("auth.login"))
+    except Exception:
+        db.session.rollback()
+        current_app.logger.exception("Unhandled registration exception [REG-UNHANDLED-01]")
+        flash(tr("auth.registration_unhandled", code="REG-UNHANDLED-01"), "danger")
     return render_template("auth/register.html", form=form)
 
 
