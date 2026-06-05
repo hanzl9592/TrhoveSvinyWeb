@@ -7,14 +7,14 @@
   <div class="stat"><span class="num">{{ stats.users }}</span><span>{{ tr('admin.stats_users') }}</span></div>
   <div class="stat"><span class="num">{{ stats.active_loans }}</span><span>{{ tr('admin.stats_active_loans') }}</span></div>
 </div>
-<ul class="admin-actions">
-  <li><a href="{{ url_for('admin.books') }}">{{ tr('admin.manage_books') }}</a></li>
-  <li><a href="{{ url_for('admin.book_new') }}">{{ tr('admin.add_book_long') }}</a></li>
-  <li><a href="{{ url_for('admin.loans_new') }}">{{ tr('admin.manual_loan') }}</a></li>
-  <li><a href="{{ url_for('admin.loans') }}">{{ tr('admin.view_active_loans') }}</a></li>
-  <li><a href="{{ url_for('admin.loans_history') }}">{{ tr('admin.loan_history_action') }}</a></li>
-  <li><a href="{{ url_for('admin.users') }}">{{ tr('admin.view_users') }}</a></li>
-  <li><a href="{{ url_for('admin.user_new') }}">{{ tr('admin.add_user_optional') }}</a></li>
-  <li><a href="{{ url_for('news.new_post') }}">{{ tr('admin.post_announcement') }}</a></li>
-</ul>
+<div class="admin-actions admin-actions-grid">
+  <a class="btn" href="{{ url_for('admin.books') }}">{{ tr('admin.manage_books') }}</a>
+  <a class="btn" href="{{ url_for('admin.book_new') }}">{{ tr('admin.add_book_long') }}</a>
+  <a class="btn" href="{{ url_for('admin.loans_new') }}">{{ tr('admin.manual_loan') }}</a>
+  <a class="btn" href="{{ url_for('admin.loans') }}">{{ tr('admin.view_active_loans') }}</a>
+  <a class="btn" href="{{ url_for('admin.loans_history') }}">{{ tr('admin.loan_history_action') }}</a>
+  <a class="btn" href="{{ url_for('admin.users') }}">{{ tr('admin.view_users') }}</a>
+  <a class="btn" href="{{ url_for('admin.user_new') }}">{{ tr('admin.add_user_optional') }}</a>
+  <a class="btn" href="{{ url_for('news.new_post') }}">{{ tr('admin.post_announcement') }}</a>
+</div>
 {% endblock %}

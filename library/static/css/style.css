@@ -908,6 +908,17 @@ button[disabled],
   padding: 0.95rem 1.2rem;
 }
 
+.admin-actions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 0.65rem;
+}
+
+.admin-actions-grid .btn {
+  width: 100%;
+  justify-content: flex-start;
+}
+
 .pagination {
   display: flex;
   gap: 0.8rem;
