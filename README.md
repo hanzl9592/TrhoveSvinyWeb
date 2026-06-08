@@ -67,22 +67,17 @@ Change these immediately in any real deployment, and set a strong
 Set these environment variables before running the app if you want real email delivery:
 
 ```powershell
-$env:MAIL_SERVER = "live.smtp.mailtrap.io"
-$env:MAIL_PORT = "587"
-$env:MAIL_USE_TLS = "1"
-$env:MAIL_USERNAME = "api"
-$env:MAIL_PASSWORD = "YOUR_MAILTRAP_API_TOKEN"
 $env:MAILTRAP_API_TOKEN = "YOUR_MAILTRAP_API_TOKEN"
-$env:MAIL_DEFAULT_SENDER = "Private Person <hello@skolniknihovnats.com>"
+$env:MAILTRAP_SENDER_EMAIL = "skolni.knihovna.TS@demomailtrap.co"
+$env:MAILTRAP_SENDER_NAME = "Skolni knihovna Trhove Sviny"
 
 # Optional token expiry settings
 $env:EMAIL_VERIFICATION_TOKEN_TTL_HOURS = "24"
 $env:PASSWORD_RESET_TOKEN_TTL_HOURS = "2"
 ```
 
-If `MAIL_SERVER` is not configured, the app shows verification/reset links in flash messages so you can still test the flow locally.
-
-The app first tries Mailtrap API (`MAILTRAP_API_TOKEN`, or `MAIL_PASSWORD` for backward compatibility), then falls back to SMTP settings.
+The app sends registration verification and password reset emails via Mailtrap API (`MAILTRAP_API_TOKEN`).
+If `MAILTRAP_API_TOKEN` is not configured or sending fails, the app shows verification/reset links in flash messages so you can still test locally.
 
 ### Recommended: .env file (auto-loaded)
 

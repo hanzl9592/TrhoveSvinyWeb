@@ -5,7 +5,7 @@ import os
 dummy_token = "abc123xyz789"
 verification_link = f"http://localhost:3000/verify?token={dummy_token}"
 
-mailtrap_token = (os.environ.get("MAILTRAP_API_TOKEN", "") or os.environ.get("MAIL_PASSWORD", "")).strip()
+mailtrap_token = (os.environ.get("MAILTRAP_API_TOKEN", "09dc0e97a657e932c9076b50f0ff20bb") or os.environ.get("MAIL_PASSWORD", "")).strip()
 sender_email = os.environ.get("MAILTRAP_SENDER_EMAIL", "hello@demomailtrap.co").strip()
 sender_name = os.environ.get("MAILTRAP_SENDER_NAME", "Knihovna ZS TS").strip()
 to_email = os.environ.get("MAILTRAP_TEST_TO", "ondrejhanzl@seznam.cz").strip()

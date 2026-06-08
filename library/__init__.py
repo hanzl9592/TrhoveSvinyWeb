@@ -215,6 +215,12 @@ def create_app(config: dict | None = None) -> Flask:
         MAIL_USERNAME=os.environ.get("MAIL_USERNAME", "api"),
         MAIL_PASSWORD=os.environ.get("MAIL_PASSWORD", ""),
         MAILTRAP_API_TOKEN=os.environ.get("MAILTRAP_API_TOKEN", ""),
+        MAILTRAP_SENDER_EMAIL=os.environ.get(
+            "MAILTRAP_SENDER_EMAIL", "hello@demomailtrap.co"
+        ),
+        MAILTRAP_SENDER_NAME=os.environ.get(
+            "MAILTRAP_SENDER_NAME", "Mailtrap Test"
+        ),
         MAIL_DEFAULT_SENDER=os.environ.get(
             "MAIL_DEFAULT_SENDER", "Private Person <hello@skolniknihovnats.com>"
         ),
