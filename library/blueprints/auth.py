@@ -2,11 +2,6 @@ import secrets
 from concurrent.futures import ThreadPoolExecutor, TimeoutError as FuturesTimeoutError
 from datetime import datetime, timedelta
 
-try:
-    import mailtrap as mt
-except ImportError:  # pragma: no cover - optional dependency in dev
-    mt = None
-
 from flask import Blueprint, flash, redirect, render_template, request, url_for
 from flask import current_app
 from flask_login import current_user, login_required, login_user, logout_user
@@ -16,6 +11,7 @@ from wtforms import PasswordField, SelectField, StringField, SubmitField
 from wtforms.validators import DataRequired, Email, EqualTo, Length
 
 from .. import db
+from ..email_service import send_mailtrap_email, send_verification_email
 from ..i18n import tr
 from ..models import User
 
@@ -66,51 +62,18 @@ def _token_expired(expires_at: datetime | None) -> bool:
 
 
 def _send_plain_email(to_email: str, subject: str, body: str) -> bool:
-    if mt is None:
-        current_app.logger.warning("Mailtrap SDK missing [MAIL-API-00]")
-        return False
-
-    api_token = current_app.config.get("MAILTRAP_API_TOKEN", "").strip()
-    if not api_token:
-        current_app.logger.warning(
-            "Mailtrap API token missing [MAIL-API-02]. Set MAILTRAP_API_TOKEN (SMTP MAIL_PASSWORD is not valid for API send)."
-        )
-        return False
-
-    sender_email = (
-        current_app.config.get("MAILTRAP_SENDER_EMAIL", "")
-        or "hello@demomailtrap.co"
-    ).strip()
-    sender_name = (
-        current_app.config.get("MAILTRAP_SENDER_NAME", "")
-        or "Mailtrap Test"
-    ).strip()
-
-    try:
-        mail = mt.Mail(
-            sender=mt.Address(email=sender_email, name=sender_name),
-            to=[mt.Address(email=to_email)],
-            subject=subject,
-            text=body,
-            category="Integration Test",
-        )
-        client = mt.MailtrapClient(token=api_token)
-        response = client.send(mail)
-        current_app.logger.info(
-            "Mailtrap send success [MAIL-API-03] to=%s sender=%s response=%s",
-            to_email,
-            sender_email,
-            response,
-        )
+    ok, code, detail = send_mailtrap_email(
+        to_email=to_email,
+        subject=subject,
+        text=body,
+        category="Integration Test",
+    )
+    if ok:
+        current_app.logger.info("Mail send success [%s] to=%s detail=%s", code, to_email, detail)
         return True
-    except Exception as exc:
-        current_app.logger.warning(
-            "Mailtrap API send failed [MAIL-API-01] to=%s sender=%s err=%s",
-            to_email,
-            sender_email,
-            exc,
-        )
-        return False
+
+    current_app.logger.warning("Mail send failed [%s] to=%s detail=%s", code, to_email, detail)
+    return False
 
 
 def _send_with_timeout(send_fn, *args) -> bool:
@@ -130,11 +93,17 @@ def _send_with_timeout(send_fn, *args) -> bool:
 
 
 def _send_verification_email(to_email: str, verify_link: str) -> bool:
-    return _send_plain_email(
+    ok, code, detail = send_verification_email(
         to_email=to_email,
+        verify_link=verify_link,
         subject=tr("auth.verify_subject"),
-        body=f"{verify_link}\n",
     )
+    if ok:
+        current_app.logger.info("Verification send success [%s] to=%s detail=%s", code, to_email, detail)
+        return True
+
+    current_app.logger.warning("Verification send failed [%s] to=%s detail=%s", code, to_email, detail)
+    return False
 
 
 def _send_password_reset_email(to_email: str, reset_link: str) -> bool:
