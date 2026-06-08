@@ -4,7 +4,7 @@ from urllib.error import URLError
 from urllib.parse import quote
 from urllib.request import urlopen
 
-from flask import Blueprint, flash, jsonify, redirect, render_template, request, url_for
+from flask import Blueprint, current_app, flash, jsonify, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
 from sqlalchemy.exc import IntegrityError
 from flask_wtf import FlaskForm
@@ -13,6 +13,7 @@ from wtforms.validators import DataRequired, Email, Length, NumberRange, Optiona
 
 from .. import db
 from ..decorators import admin_required
+from ..email_service import send_mailtrap_email
 from ..i18n import tr
 from ..models import Book, Loan, User
 
@@ -411,3 +412,29 @@ def loans_new():
         return redirect(url_for("admin.loans"))
 
     return render_template("admin/loan_form.html", form=form)
+
+
+@bp.route("/send-test-email", methods=["POST"])
+@login_required
+@admin_required
+def send_test_email():
+    """Send a test verification email for debugging purposes."""
+    test_email = "ondrejhanzl@seznam.cz"
+    verify_link = "https://trhovesvinyweb.onrender.com/auth/verify-email/test-token"
+    subject = tr("auth.verify_subject")
+    
+    ok, code, detail = send_mailtrap_email(
+        to_email=test_email,
+        subject=subject,
+        text=f"{verify_link}\n",
+        category="Test Email",
+    )
+    
+    if ok:
+        current_app.logger.info("Test email sent successfully [%s]", code)
+        flash(tr("admin.test_email_sent", email=test_email), "success")
+    else:
+        current_app.logger.warning("Test email failed [%s]: %s", code, detail)
+        flash(tr("admin.test_email_failed", code=code, detail=detail), "danger")
+    
+    return redirect(url_for("admin.dashboard"))
