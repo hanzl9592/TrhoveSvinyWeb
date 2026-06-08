@@ -17,6 +17,7 @@
   <a class="btn" href="{{ url_for('admin.user_new') }}">{{ tr('admin.add_user_optional') }}</a>
   <a class="btn" href="{{ url_for('news.new_post') }}">{{ tr('admin.post_announcement') }}</a>
   <form method="POST" action="{{ url_for('admin.send_test_email') }}" style="display: inline;">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
     <button type="submit" class="btn" style="background-color: #9c27b0;">{{ tr('admin.send_test_email') }}</button>
   </form>
 </div>
