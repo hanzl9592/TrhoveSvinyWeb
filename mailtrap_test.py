@@ -1,8 +1,19 @@
 import mailtrap as mt
+import os
 
 # 1. Create the verification link
 dummy_token = "abc123xyz789"
 verification_link = f"http://localhost:3000/verify?token={dummy_token}"
+
+mailtrap_token = (os.environ.get("MAILTRAP_API_TOKEN", "") or os.environ.get("MAIL_PASSWORD", "")).strip()
+sender_email = os.environ.get("MAILTRAP_SENDER_EMAIL", "hello@demomailtrap.co").strip()
+sender_name = os.environ.get("MAILTRAP_SENDER_NAME", "Knihovna ZS TS").strip()
+to_email = os.environ.get("MAILTRAP_TEST_TO", "ondrejhanzl@seznam.cz").strip()
+
+if not mailtrap_token:
+  raise RuntimeError(
+    "Missing Mailtrap token. Set MAILTRAP_API_TOKEN (or MAIL_PASSWORD fallback)."
+  )
 
 # 2. Design the verification email template
 html_content = f"""
@@ -23,8 +34,8 @@ html_content = f"""
 
 # 3. Configure the email layout
 mail = mt.Mail(
-    sender=mt.Address(email="mailtrap@demomailtrap.com", name="Knihovna ZŠ TS"),
-    to=[mt.Address(email="ondrejhanzl@seznam.cz")],
+  sender=mt.Address(email=sender_email, name=sender_name),
+  to=[mt.Address(email=to_email)],
     subject="Potvrzení registrace – Knihovna ZŠ Trhové Sviny",
     text=f"Dobrý den, pro potvrzení Vašeho e-mailu přejděte na: {verification_link}",
     html=html_content,
@@ -32,7 +43,7 @@ mail = mt.Mail(
 )
 
 # 4. Connect using your API token over standard web traffic (HTTPS)
-client = mt.MailtrapClient(token="5f3e5ffc8f8e8b6c9358b675b31fce5b")
+client = mt.MailtrapClient(token=mailtrap_token)
 
 try:
     response = client.send(mail)

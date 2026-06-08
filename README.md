@@ -72,6 +72,7 @@ $env:MAIL_PORT = "587"
 $env:MAIL_USE_TLS = "1"
 $env:MAIL_USERNAME = "api"
 $env:MAIL_PASSWORD = "YOUR_MAILTRAP_API_TOKEN"
+$env:MAILTRAP_API_TOKEN = "YOUR_MAILTRAP_API_TOKEN"
 $env:MAIL_DEFAULT_SENDER = "Private Person <hello@skolniknihovnats.com>"
 
 # Optional token expiry settings
@@ -80,6 +81,8 @@ $env:PASSWORD_RESET_TOKEN_TTL_HOURS = "2"
 ```
 
 If `MAIL_SERVER` is not configured, the app shows verification/reset links in flash messages so you can still test the flow locally.
+
+The app first tries Mailtrap API (`MAILTRAP_API_TOKEN`, or `MAIL_PASSWORD` for backward compatibility), then falls back to SMTP settings.
 
 ### Recommended: .env file (auto-loaded)
 

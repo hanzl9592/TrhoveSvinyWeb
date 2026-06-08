@@ -214,6 +214,7 @@ def create_app(config: dict | None = None) -> Flask:
         MAIL_USE_TLS=os.environ.get("MAIL_USE_TLS", "1") == "1",
         MAIL_USERNAME=os.environ.get("MAIL_USERNAME", "api"),
         MAIL_PASSWORD=os.environ.get("MAIL_PASSWORD", ""),
+        MAILTRAP_API_TOKEN=os.environ.get("MAILTRAP_API_TOKEN", ""),
         MAIL_DEFAULT_SENDER=os.environ.get(
             "MAIL_DEFAULT_SENDER", "Private Person <hello@skolniknihovnats.com>"
         ),

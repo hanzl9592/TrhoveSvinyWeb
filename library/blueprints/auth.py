@@ -3,6 +3,12 @@ import secrets
 from concurrent.futures import ThreadPoolExecutor, TimeoutError as FuturesTimeoutError
 from datetime import datetime, timedelta
 from email.message import EmailMessage
+from email.utils import parseaddr
+
+try:
+    import mailtrap as mt
+except ImportError:  # pragma: no cover - optional dependency in dev
+    mt = None
 
 from flask import Blueprint, flash, redirect, render_template, request, url_for
 from flask import current_app
@@ -63,12 +69,37 @@ def _token_expired(expires_at: datetime | None) -> bool:
 
 
 def _send_plain_email(to_email: str, subject: str, body: str) -> bool:
+    # Prefer Mailtrap API (fast and reliable in hosted environments), then fallback to SMTP.
+    api_token = (
+        current_app.config.get("MAILTRAP_API_TOKEN", "")
+        or current_app.config.get("MAIL_PASSWORD", "")
+    )
+    sender_raw = current_app.config.get("MAIL_DEFAULT_SENDER", "library@school.local")
+    sender_name, sender_email = parseaddr(sender_raw)
+    sender_email = sender_email or sender_raw
+    sender_name = sender_name or "Library"
+
+    if api_token and mt is not None:
+        try:
+            mail = mt.Mail(
+                sender=mt.Address(email=sender_email, name=sender_name),
+                to=[mt.Address(email=to_email)],
+                subject=subject,
+                text=body,
+                category="Library App",
+            )
+            client = mt.MailtrapClient(token=api_token)
+            client.send(mail)
+            return True
+        except Exception as exc:
+            current_app.logger.warning("Mailtrap API send failed [MAIL-API-01] err=%s", exc)
+
     server = current_app.config.get("MAIL_SERVER", "")
     if not server:
         return False
 
     msg = EmailMessage()
-    sender = current_app.config.get("MAIL_DEFAULT_SENDER", "library@school.local")
+    sender = sender_raw
     msg["Subject"] = subject
     msg["From"] = sender
     msg["To"] = to_email

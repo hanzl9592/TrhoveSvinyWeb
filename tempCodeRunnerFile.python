@@ -1,7 +1,7 @@
 import smtplib
 
 
-sender = "Private Person <hello@skolniknihovnats.com>"
+sender = "Private Person <hello@demomailtrap.co>"
 
 receiver = "A Test User <ondrejhanzl@seznam.cz>"
 
@@ -22,6 +22,6 @@ with smtplib.SMTP("live.smtp.mailtrap.io", 587) as server:
 
     server.starttls()
 
-    server.login("api", "ae79da754821701600a166df696fb051")
+    server.login("api", "227bc8f49234e5edc6e3d37475fabc4e")
 
     server.sendmail(sender, receiver, message)
