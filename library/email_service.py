@@ -4,11 +4,9 @@ import os
 from typing import Any
 
 try:
-    import mailtrap as mt
-    from mailtrap.exceptions import AuthorizationError
-except ImportError:  # pragma: no cover - optional dependency in some environments
-    mt = None
-    AuthorizationError = Exception
+    import requests
+except ImportError:  # pragma: no cover
+    requests = None
 
 try:
     from flask import current_app, has_app_context
@@ -33,8 +31,8 @@ def send_mailtrap_email(
     *,
     category: str = "Integration Test",
 ) -> tuple[bool, str, str]:
-    if mt is None:
-        return False, "MAIL-API-00", "Mailtrap SDK missing"
+    if requests is None:
+        return False, "MAIL-API-00", "requests library missing"
 
     api_token = _get_setting("MAILTRAP_API_TOKEN").strip()
     if not api_token:
@@ -44,18 +42,28 @@ def send_mailtrap_email(
     sender_name = _get_setting("MAILTRAP_SENDER_NAME", "Mailtrap Test").strip()
 
     try:
-        mail = mt.Mail(
-            sender=mt.Address(email=sender_email, name=sender_name),
-            to=[mt.Address(email=to_email)],
-            subject=subject,
-            text=text,
-            category=category,
-        )
-        client = mt.MailtrapClient(token=api_token)
-        response: Any = client.send(mail)
-        return True, "MAIL-API-03", str(response)
-    except AuthorizationError as exc:
-        return False, "MAIL-API-04", str(exc)
+        url = "https://send.api.mailtrap.io/api/send"
+        headers = {
+            "Authorization": f"Bearer {api_token}",
+            "Content-Type": "application/json",
+        }
+        payload = {
+            "from": {"email": sender_email, "name": sender_name},
+            "to": [{"email": to_email}],
+            "subject": subject,
+            "text": text,
+            "category": category,
+        }
+        response: Any = requests.post(url, json=payload, headers=headers, timeout=30)
+        
+        if response.status_code == 401:
+            return False, "MAIL-API-04", "Unauthorized: Invalid API token"
+        
+        if response.status_code >= 400:
+            error_detail = response.text or f"HTTP {response.status_code}"
+            return False, "MAIL-API-01", error_detail
+        
+        return True, "MAIL-API-03", response.text or "Email sent successfully"
     except Exception as exc:  # pragma: no cover - external API failure path
         return False, "MAIL-API-01", str(exc)
 
