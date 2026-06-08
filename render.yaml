@@ -26,6 +26,12 @@ services:
         value: a89fb9430cc48c
       - key: MAIL_DEFAULT_SENDER
         value: TS Library <no-reply@school.local>
+      - key: MAILTRAP_API_TOKEN
+        sync: false
+      - key: MAILTRAP_SENDER_EMAIL
+        value: hello@demomailtrap.co
+      - key: MAILTRAP_SENDER_NAME
+        value: Mailtrap Test
       - key: MAIL_TIMEOUT_SECONDS
         value: "5"
       - key: MAIL_SEND_STEP_TIMEOUT_SECONDS

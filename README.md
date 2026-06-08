@@ -84,7 +84,7 @@ If `MAILTRAP_API_TOKEN` is not configured or sending fails, the app shows verifi
 The app now loads settings automatically from `.env` in the project root on startup.
 
 1. Copy `.env.example` to `.env`.
-2. Set your real `MAIL_PASSWORD` (Mailtrap API token).
+2. Set your real `MAILTRAP_API_TOKEN`.
 3. Run `python run.py`.
 
 PowerShell copy command:
