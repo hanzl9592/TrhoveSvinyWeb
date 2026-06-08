@@ -1,5 +1,4 @@
 import secrets
-from concurrent.futures import ThreadPoolExecutor, TimeoutError as FuturesTimeoutError
 from datetime import datetime, timedelta
 
 from flask import Blueprint, flash, redirect, render_template, request, url_for
@@ -76,22 +75,6 @@ def _send_plain_email(to_email: str, subject: str, body: str) -> bool:
     return False
 
 
-def _send_with_timeout(send_fn, *args) -> bool:
-    timeout_seconds = float(current_app.config.get("MAIL_SEND_STEP_TIMEOUT_SECONDS", 10))
-    executor = ThreadPoolExecutor(max_workers=1)
-    future = executor.submit(send_fn, *args)
-    try:
-        return bool(future.result(timeout=timeout_seconds))
-    except FuturesTimeoutError:
-        current_app.logger.warning("Mail step timed out [MAIL-TIMEOUT-01]")
-        return False
-    except Exception:
-        current_app.logger.exception("Mail step failed [MAIL-ERROR-01]")
-        return False
-    finally:
-        executor.shutdown(wait=False, cancel_futures=True)
-
-
 def _send_verification_email(to_email: str, verify_link: str) -> bool:
     ok, code, detail = send_verification_email(
         to_email=to_email,
@@ -142,7 +125,7 @@ def login():
                     token=user.email_verification_token,
                     _external=True,
                 )
-                if _send_with_timeout(_send_verification_email, user.email, verify_link):
+                if _send_verification_email(user.email, verify_link):
                     flash(tr("auth.verify_email_sent"), "info")
                 else:
                     flash(tr("auth.verify_email_fallback", link=verify_link), "warning")
@@ -202,7 +185,7 @@ def register():
 
                 try:
                     verify_link = url_for("auth.verify_email", token=token, _external=True)
-                    if _send_with_timeout(_send_verification_email, email, verify_link):
+                    if _send_verification_email(email, verify_link):
                         flash(tr("auth.verify_email_sent"), "success")
                     else:
                         flash(tr("auth.verify_email_fallback", link=verify_link), "warning")
@@ -257,7 +240,7 @@ def forgot_password():
             db.session.commit()
 
             reset_link = url_for("auth.reset_password", token=token, _external=True)
-            if _send_with_timeout(_send_password_reset_email, email, reset_link):
+            if _send_password_reset_email(email, reset_link):
                 flash(tr("auth.reset_email_sent"), "success")
             else:
                 flash(tr("auth.reset_email_fallback", link=reset_link), "warning")
