@@ -37,6 +37,8 @@ def _cart_books(book_ids: list[int]) -> list[Book]:
 @bp.route("/cart")
 @login_required
 def cart():
+    if not current_user.is_admin:
+        abort(403)
     book_ids = _get_cart()
     books = _cart_books(book_ids)
     return render_template("loans/cart.html", books=books)
@@ -45,6 +47,8 @@ def cart():
 @bp.route("/cart/add/<int:book_id>", methods=["POST"])
 @login_required
 def cart_add(book_id: int):
+    if not current_user.is_admin:
+        abort(403)
     book = Book.query.get_or_404(book_id)
     cart = _get_cart()
     if book_id not in cart:
@@ -60,6 +64,8 @@ def cart_add(book_id: int):
 @bp.route("/cart/remove/<int:book_id>", methods=["POST"])
 @login_required
 def cart_remove(book_id: int):
+    if not current_user.is_admin:
+        abort(403)
     cart = _get_cart()
     if book_id in cart:
         cart.remove(book_id)
@@ -70,6 +76,8 @@ def cart_remove(book_id: int):
 @bp.route("/cart/confirm", methods=["POST"])
 @login_required
 def cart_confirm():
+    if not current_user.is_admin:
+        abort(403)
     cart = _get_cart()
     if not cart:
         flash(tr("loans.cart_empty"), "warning")
