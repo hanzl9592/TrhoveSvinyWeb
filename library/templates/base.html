@@ -37,6 +37,8 @@
             {% if current_user.is_authenticated %}
               {% if current_user.is_admin %}
                 <a role="menuitem" href="{{ url_for('admin.dashboard') }}">{{ tr('admin.dashboard') }}</a>
+              {% else %}
+                <a role="menuitem" href="{{ url_for('loans.reservations') }}">{{ tr('loans.pending_reservations_menu') }}</a>
               {% endif %}
               <a role="menuitem" href="{{ url_for('loans.my_loans') }}">{{ tr('nav.my_loans') }}</a>
               <a role="menuitem" href="{{ url_for('auth.logout') }}">{{ tr('nav.sign_out') }}</a>
@@ -51,8 +53,9 @@
         {% if current_user.is_authenticated %}
           <div class="cart-icon">
             {% if not current_user.is_admin %}
-              <a href="{{ url_for('loans.reservations') }}" title="{{ tr('loans.reservations_title') }}" class="icon-link">
+              <a href="{{ url_for('loans.reservations') }}" title="{{ tr('loans.pending_reservations_menu') }}" class="icon-link">
                 📋
+                {% if current_user.pending_reservations_count %}<span class="badge">{{ current_user.pending_reservations_count }}</span>{% endif %}
               </a>
             {% else %}
               {% set cart_count = session.get('loan_cart', [])|length %}

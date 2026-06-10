@@ -42,6 +42,11 @@ class User(UserMixin, db.Model):
     def is_admin(self) -> bool:
         return self.role == "admin"
 
+    @property
+    def pending_reservations_count(self) -> int:
+        """Get count of pending reservations for this user."""
+        return self.reservations.filter_by(status="pending").count()
+
     def __repr__(self) -> str:
         return f"<User {self.username} ({self.role})>"
 
