@@ -261,16 +261,22 @@ def book_delete(book_id: int):
 
 @bp.route("/loans")
 def loans():
-    active = (
-        Loan.query.filter_by(returned_at=None).order_by(Loan.due_at.asc()).all()
-    )
-    return render_template("admin/loans.html", loans=active)
+    # Redirect old active-loans URL to the combined history page
+    return redirect(url_for("admin.loans_history"))
 
 
 @bp.route("/loans/history")
 def loans_history():
-    all_loans = Loan.query.order_by(Loan.borrowed_at.desc()).limit(500).all()
-    return render_template("admin/loans_history.html", loans=all_loans)
+    active = (
+        Loan.query.filter_by(returned_at=None).order_by(Loan.due_at.asc()).all()
+    )
+    history = (
+        Loan.query.filter(Loan.returned_at.isnot(None))
+        .order_by(Loan.borrowed_at.desc())
+        .limit(500)
+        .all()
+    )
+    return render_template("admin/loans_history.html", active=active, history=history)
 
 
 @bp.route("/users")

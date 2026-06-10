@@ -2,14 +2,43 @@
 {% block title %}{{ tr('nav.admin') }} · {{ tr('admin.loan_history') }}{% endblock %}
 {% block content %}
 <h1>{{ tr('admin.loan_history') }}</h1>
+
+<h2>{{ tr('admin.active_loans') }}</h2>
+<p><a class="btn primary" href="{{ url_for('admin.loans_new') }}">+ {{ tr('admin.manual_loan') }}</a></p>
+{% if active %}
+  <table class="data">
+    <thead><tr><th>{{ tr('loans.book') }}</th><th>{{ tr('admin.col_user') }}</th><th>{{ tr('loans.borrowed') }}</th><th>{{ tr('loans.due') }}</th><th>{{ tr('loans.status') }}</th><th></th></tr></thead>
+    <tbody>
+      {% for loan in active %}
+        <tr>
+          <td>{{ loan.book.title }}</td>
+          <td>{{ loan.user.username }} ({{ tr('role.' ~ loan.user.role) }})</td>
+          <td>{{ loan.borrowed_at.strftime('%Y-%m-%d') }}</td>
+          <td>{{ loan.due_at.strftime('%Y-%m-%d') }}</td>
+          <td>{% if loan.is_overdue %}<span class="warn">{{ tr('loans.status_overdue') }}</span>{% else %}{{ tr('loans.status_ok') }}{% endif %}</td>
+          <td>
+            <form method="post" action="{{ url_for('loans.return_book', loan_id=loan.id) }}">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+              <button class="btn" type="submit">{{ tr('common.return') }}</button>
+            </form>
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% else %}
+  <p>{{ tr('loans.no_active_admin') }}</p>
+{% endif %}
+
+<h2 style="margin-top:2rem;">{{ tr('admin.loan_history') }}</h2>
 <p class="muted">{{ tr('admin.recent_500') }}</p>
-{% if loans %}
+{% if history %}
   <table class="data">
     <thead>
       <tr><th>{{ tr('loans.book') }}</th><th>{{ tr('admin.col_user') }}</th><th>{{ tr('loans.borrowed') }}</th><th>{{ tr('loans.due') }}</th><th>{{ tr('loans.returned') }}</th><th>{{ tr('loans.status') }}</th></tr>
     </thead>
     <tbody>
-      {% for loan in loans %}
+      {% for loan in history %}
         <tr>
           <td>{{ loan.book.title }}</td>
           <td>{{ loan.user.username }} ({{ tr('role.' ~ loan.user.role) }})</td>

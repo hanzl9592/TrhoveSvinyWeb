@@ -104,8 +104,7 @@
               <a href="{{ url_for('loans.my_loans') }}">{{ tr('nav.my_loans') }}</a>
               {% if current_user.is_admin %}
                 <a href="{{ url_for('loans.admin_reservations') }}">{{ tr('loans.admin_reservations_title') }}</a>
-                {% set cart_count = session.get('loan_cart', [])|length %}
-                <a href="{{ url_for('loans.cart') }}">{{ tr('nav.cart') }}{% if cart_count %} ({{ cart_count }}){% endif %}</a>
+                <a href="{{ url_for('admin.loans_history') }}">{{ tr('admin.loan_history') }}</a>
                 {% set admin_cart = session.get('admin_loan_cart', {}) %}
                 {% set admin_cart_count = (admin_cart.get('book_ids') or [])|length %}
                 <a href="{{ url_for('loans.admin_cart') }}">{{ tr('nav.admin_cart') }}{% if admin_cart_count %} ({{ admin_cart_count }}){% endif %}</a>
