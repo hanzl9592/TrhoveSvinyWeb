@@ -331,12 +331,10 @@ def cancel_reservation(reservation_id: int):
 @bp.route("/admin/reservations")
 @login_required
 def admin_reservations():
-    """Admin view all pending reservations."""
+    """Redirect legacy reservations page to merged admin loan management page."""
     if not current_user.is_admin:
         abort(403)
-    
-    pending = Reservation.query.filter_by(status="pending").order_by(Reservation.reserved_at.asc()).all()
-    return render_template("loans/admin_reservations.html", reservations=pending)
+    return redirect(url_for("admin.loans_history"))
 
 
 @bp.route("/admin/reservation/confirm/<int:reservation_id>", methods=["POST"])
@@ -351,17 +349,17 @@ def admin_confirm_reservation(reservation_id: int):
     due_date_raw = (request.form.get("due_date") or "").strip()
     if not due_date_raw:
         flash(tr("loans.due_date_required"), "warning")
-        return redirect(url_for("loans.admin_reservations"))
+        return redirect(url_for("admin.loans_history"))
     try:
         due_date = datetime.strptime(due_date_raw, "%Y-%m-%d").date()
         due_at = datetime.combine(due_date, time(hour=23, minute=59, second=59))
     except ValueError:
         flash(tr("loans.due_date_invalid"), "warning")
-        return redirect(url_for("loans.admin_reservations"))
+        return redirect(url_for("admin.loans_history"))
     
     if reservation.status != "pending":
         flash(tr("loans.not_pending_reservation"), "info")
-        return redirect(url_for("loans.admin_reservations"))
+        return redirect(url_for("admin.loans_history"))
     
     book = reservation.book
     
@@ -370,12 +368,12 @@ def admin_confirm_reservation(reservation_id: int):
     available_for_confirmation = book.copies_available + 1
     if available_for_confirmation <= 0:
         flash(tr("loans.no_copies_available", title=book.title), "warning")
-        return redirect(url_for("loans.admin_reservations"))
+        return redirect(url_for("admin.loans_history"))
     
     # Check if user already has this book on loan
     if Loan.query.filter_by(user_id=reservation.user_id, book_id=book.id, returned_at=None).first():
         flash(tr("loans.user_already_has_book", title=book.title), "warning")
-        return redirect(url_for("loans.admin_reservations"))
+        return redirect(url_for("admin.loans_history"))
     
     # Create loan from reservation
     loan = Loan(user_id=reservation.user_id, book_id=book.id, due_at=due_at)
@@ -386,7 +384,7 @@ def admin_confirm_reservation(reservation_id: int):
     db.session.commit()
     
     flash(tr("loans.reservation_confirmed", title=book.title, username=reservation.user.username), "success")
-    return redirect(url_for("loans.admin_reservations"))
+    return redirect(url_for("admin.loans_history"))
 
 
 @bp.route("/admin/reservation/decline/<int:reservation_id>", methods=["POST"])
@@ -406,4 +404,4 @@ def admin_decline_reservation(reservation_id: int):
     else:
         flash(tr("loans.cannot_decline_confirmed"), "info")
     
-    return redirect(url_for("loans.admin_reservations"))
+    return redirect(url_for("admin.loans_history"))

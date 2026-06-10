@@ -16,7 +16,7 @@ from .. import db
 from ..decorators import admin_required
 from ..email_service import send_mailtrap_email
 from ..i18n import tr
-from ..models import Book, Loan, User
+from ..models import Book, Loan, Reservation, User
 
 bp = Blueprint("admin", __name__)
 
@@ -267,6 +267,11 @@ def loans():
 
 @bp.route("/loans/history")
 def loans_history():
+    reservations = (
+        Reservation.query.filter_by(status="pending")
+        .order_by(Reservation.reserved_at.asc())
+        .all()
+    )
     active = (
         Loan.query.filter_by(returned_at=None).order_by(Loan.due_at.asc()).all()
     )
@@ -276,7 +281,12 @@ def loans_history():
         .limit(500)
         .all()
     )
-    return render_template("admin/loans_history.html", active=active, history=history)
+    return render_template(
+        "admin/loans_history.html",
+        reservations=reservations,
+        active=active,
+        history=history,
+    )
 
 
 @bp.route("/users")

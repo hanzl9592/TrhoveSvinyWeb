@@ -103,7 +103,6 @@
             {% if current_user.is_authenticated %}
               <a href="{{ url_for('loans.my_loans') }}">{{ tr('nav.my_loans') }}</a>
               {% if current_user.is_admin %}
-                <a href="{{ url_for('loans.admin_reservations') }}">{{ tr('loans.admin_reservations_title') }}</a>
                 <a href="{{ url_for('admin.loans_history') }}">{{ tr('admin.loan_history_action') }}</a>
                 {% set admin_cart = session.get('admin_loan_cart', {}) %}
                 {% set admin_cart_count = (admin_cart.get('book_ids') or [])|length %}
