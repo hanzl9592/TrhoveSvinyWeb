@@ -99,6 +99,8 @@ table {
   margin-left: 0;
   margin-right: 0;
   padding-right: 0.9rem;
+  position: relative;
+  z-index: 3200;
 }
 
 .topbar-lang {
@@ -417,7 +419,7 @@ table {
   position: fixed;
   left: var(--menu-panel-left, calc(100vw - 348px));
   top: var(--menu-panel-top, 72px);
-  z-index: 1300;
+  z-index: 3500;
   min-width: 240px;
   width: min(92vw, 340px);
   padding: 0.45rem;
@@ -434,6 +436,8 @@ table {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  position: relative;
+  z-index: 3600;
   margin: 0;
   width: 3.2rem;
   min-height: 3.2rem;
