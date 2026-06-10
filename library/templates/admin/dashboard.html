@@ -9,12 +9,8 @@
 </div>
 <div class="admin-actions admin-actions-grid">
   <a class="btn" href="{{ url_for('admin.books') }}">{{ tr('admin.manage_books') }}</a>
-  <a class="btn" href="{{ url_for('admin.book_new') }}">{{ tr('admin.add_book_long') }}</a>
-  <a class="btn" href="{{ url_for('admin.loans_new') }}">{{ tr('admin.manual_loan') }}</a>
-  <a class="btn" href="{{ url_for('admin.loans') }}">{{ tr('admin.view_active_loans') }}</a>
   <a class="btn" href="{{ url_for('admin.loans_history') }}">{{ tr('admin.loan_history_action') }}</a>
   <a class="btn" href="{{ url_for('admin.users') }}">{{ tr('admin.view_users') }}</a>
-  <a class="btn" href="{{ url_for('admin.user_new') }}">{{ tr('admin.add_user_optional') }}</a>
   <a class="btn" href="{{ url_for('news.new_post') }}">{{ tr('admin.post_announcement') }}</a>
   <form method="POST" action="{{ url_for('admin.send_test_email') }}" style="display: inline;">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
