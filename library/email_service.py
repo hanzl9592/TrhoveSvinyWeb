@@ -75,3 +75,12 @@ def send_verification_email(to_email: str, verify_link: str, subject: str) -> tu
         text=f"{verify_link}\n",
         category="Integration Test",
     )
+
+
+def send_password_reset_email(to_email: str, reset_link: str, subject: str) -> tuple[bool, str, str]:
+    return send_mailtrap_email(
+        to_email=to_email,
+        subject=subject,
+        text=f"{reset_link}\n",
+        category="Integration Test",
+    )

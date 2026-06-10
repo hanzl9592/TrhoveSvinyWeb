@@ -10,7 +10,7 @@ from wtforms import PasswordField, SelectField, StringField, SubmitField
 from wtforms.validators import DataRequired, Email, EqualTo, Length
 
 from .. import db
-from ..email_service import send_mailtrap_email, send_verification_email
+from ..email_service import send_mailtrap_email, send_password_reset_email, send_verification_email
 from ..i18n import tr
 from ..models import User
 
@@ -90,15 +90,17 @@ def _send_verification_email(to_email: str, verify_link: str) -> bool:
 
 
 def _send_password_reset_email(to_email: str, reset_link: str) -> bool:
-    return _send_plain_email(
+    ok, code, detail = send_password_reset_email(
         to_email=to_email,
+        reset_link=reset_link,
         subject=tr("auth.reset_subject"),
-        body=(
-            f"{tr('auth.reset_mail_intro')}\n\n"
-            f"{tr('auth.reset_mail_cta')}\n"
-            f"{reset_link}\n"
-        ),
     )
+    if ok:
+        current_app.logger.info("Password reset send success [%s] to=%s detail=%s", code, to_email, detail)
+        return True
+
+    current_app.logger.warning("Password reset send failed [%s] to=%s detail=%s", code, to_email, detail)
+    return False
 
 
 @bp.route("/login", methods=["GET", "POST"])
