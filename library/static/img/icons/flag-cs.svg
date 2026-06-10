@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 3 2" width="300" height="200" aria-label="Czech flag">
+  <rect width="3" height="1" y="0" fill="#ffffff"/>
+  <rect width="3" height="1" y="1" fill="#d7141a"/>
+  <polygon points="0,0 1.5,1 0,2" fill="#11457e"/>
+</svg>

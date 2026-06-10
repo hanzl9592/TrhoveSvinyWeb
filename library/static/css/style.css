@@ -112,8 +112,27 @@ table {
   position: relative;
 }
 
+.topbar .lang-menu,
+.topbar .account-menu,
+.topbar .cart-icon,
+.topbar .nav-toggle {
+  margin-left: 0;
+}
+
+.topbar .cart-icon {
+  order: 1;
+}
+
 .topbar .lang-menu {
-  margin-left: auto;
+  order: 2;
+}
+
+.topbar .account-menu {
+  order: 3;
+}
+
+.topbar .nav-toggle {
+  order: 4;
 }
 
 .topbar .account-menu + .nav-toggle {

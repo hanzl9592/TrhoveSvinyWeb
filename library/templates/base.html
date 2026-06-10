@@ -16,8 +16,8 @@
       <div class="topbar-links">
         <details class="lang-menu">
           <summary>
-            <img class="lang-flag" src="{{ url_for('static', filename='img/icons/flag-en.svg') }}" alt="English" />
-            <span>{{ tr('lang.en') }}</span>
+            <img class="lang-flag" src="{{ url_for('static', filename='img/icons/flag-' ~ current_lang ~ '.svg') }}" alt="{{ tr('lang.' ~ current_lang) }}" />
+            <span>{{ tr('lang.' ~ current_lang) }}</span>
           </summary>
           <div class="lang-dropdown" role="menu" aria-label="Language switcher">
             <a role="menuitem" href="{{ url_for('main.set_language', lang='cs') }}">{{ tr('lang.cs') }}</a>
