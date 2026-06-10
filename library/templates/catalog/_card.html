@@ -17,16 +17,22 @@
 
   {% if current_user.is_authenticated %}
     {% if book.copies_available > 0 %}
-      <form method="post" action="{{ url_for('loans.cart_add', book_id=book.id) }}" class="inline-action">
-        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
-        <input type="hidden" name="next" value="{{ request.full_path }}" />
-        <button class="btn primary" type="submit">{{ tr('loans.cart_add_btn') }}</button>
-      </form>
       {% if current_user.is_admin %}
+        <form method="post" action="{{ url_for('loans.cart_add', book_id=book.id) }}" class="inline-action">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+          <input type="hidden" name="next" value="{{ request.full_path }}" />
+          <button class="btn primary" type="submit">{{ tr('loans.cart_add_btn') }}</button>
+        </form>
         <form method="post" action="{{ url_for('loans.admin_cart_add', book_id=book.id) }}" class="inline-action" style="margin-top:0.3rem;">
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
           <input type="hidden" name="next" value="{{ request.full_path }}" />
           <button class="btn" type="submit">{{ tr('loans.admin_cart_add_btn') }}</button>
+        </form>
+      {% else %}
+        <form method="post" action="{{ url_for('loans.reserve', book_id=book.id) }}" class="inline-action">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+          <input type="hidden" name="next" value="{{ request.full_path }}" />
+          <button class="btn primary" type="submit">{{ tr('loans.reserve_btn') }}</button>
         </form>
       {% endif %}
     {% else %}
