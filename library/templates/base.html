@@ -48,6 +48,23 @@
           </div>
         </details>
 
+        {% if current_user.is_authenticated %}
+          <div class="cart-icon">
+            {% if not current_user.is_admin %}
+              {% set res_count = current_user.reservations.filter_by(status='pending').count() %}
+              <a href="{{ url_for('loans.reservations') }}" title="{{ tr('loans.reservations_title') }}" class="icon-link">
+                📋
+                {% if res_count %}<span class="badge">{{ res_count }}</span>{% endif %}
+              </a>
+            {% endif %}
+            {% set cart_count = session.get('loan_cart', [])|length %}
+            <a href="{{ url_for('loans.cart') }}" title="{{ tr('nav.cart') }}" class="icon-link">
+              🛒
+              {% if cart_count %}<span class="badge">{{ cart_count }}</span>{% endif %}
+            </a>
+          </div>
+        {% endif %}
+
         <button
           class="nav-toggle"
           type="button"
@@ -83,9 +100,13 @@
             <a href="{{ url_for('main.contact') }}">{{ tr('nav.contact') }}</a>
             {% if current_user.is_authenticated %}
               <a href="{{ url_for('loans.my_loans') }}">{{ tr('nav.my_loans') }}</a>
+              {% if not current_user.is_admin %}
+                <a href="{{ url_for('loans.reservations') }}">{{ tr('loans.reservations_title') }}</a>
+              {% endif %}
               {% set cart_count = session.get('loan_cart', [])|length %}
               <a href="{{ url_for('loans.cart') }}">{{ tr('nav.cart') }}{% if cart_count %} ({{ cart_count }}){% endif %}</a>
               {% if current_user.is_admin %}
+                <a href="{{ url_for('loans.admin_reservations') }}">{{ tr('loans.admin_reservations_title') }}</a>
                 {% set admin_cart = session.get('admin_loan_cart', {}) %}
                 {% set admin_cart_count = (admin_cart.get('book_ids') or [])|length %}
                 <a href="{{ url_for('loans.admin_cart') }}">{{ tr('nav.admin_cart') }}{% if admin_cart_count %} ({{ admin_cart_count }}){% endif %}</a>

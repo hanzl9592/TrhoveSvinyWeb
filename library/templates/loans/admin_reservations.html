@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}{{ tr('nav.admin') }} · {{ tr('loans.admin_reservations_title') }}{% endblock %}
+{% block content %}
+<h1>{{ tr('loans.admin_reservations_title') }}</h1>
+
+{% if reservations %}
+  <table class="data">
+    <thead>
+      <tr>
+        <th>{{ tr('loans.book') }}</th>
+        <th>{{ tr('admin.col_user') }}</th>
+        <th>{{ tr('loans.reserved') }}</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for res in reservations %}
+        <tr>
+          <td>{{ res.book.title }}<br /><span class="muted">{{ res.book.author }}</span></td>
+          <td>{{ res.user.username }} ({{ res.user.first_name or '' }})</td>
+          <td>{{ res.reserved_at.strftime('%Y-%m-%d %H:%M') }}</td>
+          <td>
+            <form method="post" action="{{ url_for('loans.admin_confirm_reservation', reservation_id=res.id) }}" style="display:inline;">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+              <button class="btn" type="submit">{{ tr('loans.confirm_reservation') }}</button>
+            </form>
+            <form method="post" action="{{ url_for('loans.admin_decline_reservation', reservation_id=res.id) }}" style="display:inline;">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+              <button class="btn" type="submit">{{ tr('loans.decline_reservation') }}</button>
+            </form>
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% else %}
+  <p>{{ tr('loans.no_pending_reservations') }}</p>
+{% endif %}
+{% endblock %}

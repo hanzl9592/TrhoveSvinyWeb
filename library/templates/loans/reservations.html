@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}{{ tr('loans.reservations_title') }}{% endblock %}
+{% block content %}
+<h1>{{ tr('loans.reservations_title') }}</h1>
+
+{% if pending or confirmed %}
+  {% if pending %}
+    <h2>{{ tr('loans.pending_reservations') }}</h2>
+    <table class="data">
+      <thead>
+        <tr>
+          <th>{{ tr('loans.book') }}</th>
+          <th>{{ tr('loans.reserved') }}</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for res in pending %}
+          <tr>
+            <td><a href="{{ url_for('catalog.detail', book_id=res.book.id) }}">{{ res.book.title }}</a><br /><span class="muted">{{ res.book.author }}</span></td>
+            <td>{{ res.reserved_at.strftime('%Y-%m-%d %H:%M') }}</td>
+            <td>
+              <form method="post" action="{{ url_for('loans.cancel_reservation', reservation_id=res.id) }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+                <button class="btn-link" type="submit">{{ tr('loans.reservation_cancel') }}</button>
+              </form>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% endif %}
+
+  {% if confirmed %}
+    <h2 style="margin-top: 2rem;">{{ tr('loans.confirmed_reservations') }}</h2>
+    <p class="muted">{{ tr('loans.confirmed_reservations_note') }}</p>
+    <table class="data">
+      <thead>
+        <tr>
+          <th>{{ tr('loans.book') }}</th>
+          <th>{{ tr('loans.confirmed') }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for res in confirmed %}
+          <tr>
+            <td><a href="{{ url_for('catalog.detail', book_id=res.book.id) }}">{{ res.book.title }}</a><br /><span class="muted">{{ res.book.author }}</span></td>
+            <td>{{ res.confirmed_at.strftime('%Y-%m-%d %H:%M') }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% endif %}
+{% else %}
+  <p>{{ tr('loans.no_reservations') }}</p>
+  <a class="btn primary" href="{{ url_for('catalog.index') }}">{{ tr('loans.cart_continue') }}</a>
+{% endif %}
+{% endblock %}

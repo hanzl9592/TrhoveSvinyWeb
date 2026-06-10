@@ -30,6 +30,7 @@ class User(UserMixin, db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     loans = db.relationship("Loan", back_populates="user", lazy="dynamic")
+    reservations = db.relationship("Reservation", back_populates="user", lazy="dynamic")
 
     def set_password(self, password: str) -> None:
         self.password_hash = generate_password_hash(password)
@@ -60,6 +61,7 @@ class Book(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     loans = db.relationship("Loan", back_populates="book", lazy="dynamic")
+    reservations = db.relationship("Reservation", back_populates="book", lazy="dynamic")
 
     @property
     def copies_on_loan(self) -> int:
@@ -97,6 +99,23 @@ class Loan(db.Model):
     @property
     def is_overdue(self) -> bool:
         return self.is_active and datetime.utcnow() > self.due_at
+
+
+class Reservation(db.Model):
+    __tablename__ = "reservations"
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
+    book_id = db.Column(db.Integer, db.ForeignKey("books.id"), nullable=False)
+    reserved_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    status = db.Column(db.String(16), nullable=False, default="pending")  # pending|confirmed
+    confirmed_at = db.Column(db.DateTime, nullable=True)
+
+    user = db.relationship("User", back_populates="reservations")
+    book = db.relationship("Book", back_populates="reservations")
+
+    def __repr__(self) -> str:
+        return f"<Reservation {self.user.username} → {self.book.title} ({self.status})>"
 
 
 class NewsPost(db.Model):

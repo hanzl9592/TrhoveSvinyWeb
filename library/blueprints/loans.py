@@ -5,7 +5,7 @@ from flask_login import current_user, login_required
 
 from .. import db
 from ..i18n import tr
-from ..models import Book, Loan, User
+from ..models import Book, Loan, User, Reservation
 
 bp = Blueprint("loans", __name__)
 
@@ -242,3 +242,142 @@ def return_book(loan_id: int):
         db.session.commit()
         flash(tr("loans.return_success", title=loan.book.title), "success")
     return redirect(url_for("admin.loans"))
+
+
+# ── reservations (user) ───────────────────────────────────────────────────────
+
+@bp.route("/reserve/<int:book_id>", methods=["POST"])
+@login_required
+def reserve(book_id: int):
+    """User makes a reservation for a book."""
+    if current_user.is_admin:
+        abort(403)
+    
+    book = Book.query.get_or_404(book_id)
+    
+    # Check if user already has this book on loan
+    if current_user.loans.filter_by(book_id=book.id, returned_at=None).first():
+        flash(tr("loans.already_on_loan", title=book.title), "warning")
+        next_url = request.form.get("next") or url_for("catalog.index")
+        return redirect(next_url)
+    
+    # Check if user already has a pending reservation
+    existing = Reservation.query.filter_by(
+        user_id=current_user.id, 
+        book_id=book.id, 
+        status="pending"
+    ).first()
+    if existing:
+        flash(tr("loans.already_reserved", title=book.title), "info")
+        next_url = request.form.get("next") or url_for("catalog.index")
+        return redirect(next_url)
+    
+    # Create reservation
+    reservation = Reservation(user_id=current_user.id, book_id=book.id)
+    db.session.add(reservation)
+    db.session.commit()
+    flash(tr("loans.reservation_made", title=book.title), "success")
+    
+    next_url = request.form.get("next") or url_for("catalog.index")
+    return redirect(next_url)
+
+
+@bp.route("/reservations")
+@login_required
+def reservations():
+    """View user's reservations."""
+    if current_user.is_admin:
+        abort(403)
+    
+    pending = current_user.reservations.filter_by(status="pending").order_by(Reservation.reserved_at.desc()).all()
+    confirmed = current_user.reservations.filter_by(status="confirmed").order_by(Reservation.reserved_at.desc()).all()
+    return render_template("loans/reservations.html", pending=pending, confirmed=confirmed)
+
+
+@bp.route("/reservation/cancel/<int:reservation_id>", methods=["POST"])
+@login_required
+def cancel_reservation(reservation_id: int):
+    """User cancels their reservation."""
+    reservation = Reservation.query.get_or_404(reservation_id)
+    
+    if reservation.user_id != current_user.id and not current_user.is_admin:
+        abort(403)
+    
+    if reservation.status == "pending":
+        db.session.delete(reservation)
+        db.session.commit()
+        flash(tr("loans.reservation_cancelled", title=reservation.book.title), "success")
+    else:
+        flash(tr("loans.cannot_cancel_confirmed"), "warning")
+    
+    return redirect(url_for("loans.reservations"))
+
+
+# ── reservations (admin) ──────────────────────────────────────────────────────
+
+@bp.route("/admin/reservations")
+@login_required
+def admin_reservations():
+    """Admin view all pending reservations."""
+    if not current_user.is_admin:
+        abort(403)
+    
+    pending = Reservation.query.filter_by(status="pending").order_by(Reservation.reserved_at.asc()).all()
+    return render_template("loans/admin_reservations.html", reservations=pending)
+
+
+@bp.route("/admin/reservation/confirm/<int:reservation_id>", methods=["POST"])
+@login_required
+def admin_confirm_reservation(reservation_id: int):
+    """Admin confirms a reservation and creates a loan."""
+    if not current_user.is_admin:
+        abort(403)
+    
+    reservation = Reservation.query.get_or_404(reservation_id)
+    
+    if reservation.status != "pending":
+        flash(tr("loans.not_pending_reservation"), "info")
+        return redirect(url_for("loans.admin_reservations"))
+    
+    book = reservation.book
+    
+    # Check if book is available
+    if book.copies_available <= 0:
+        flash(tr("loans.no_copies_available", title=book.title), "warning")
+        return redirect(url_for("loans.admin_reservations"))
+    
+    # Check if user already has this book on loan
+    if Loan.query.filter_by(user_id=reservation.user_id, book_id=book.id, returned_at=None).first():
+        flash(tr("loans.user_already_has_book", title=book.title), "warning")
+        return redirect(url_for("loans.admin_reservations"))
+    
+    # Create loan from reservation
+    loan = Loan(user_id=reservation.user_id, book_id=book.id)
+    reservation.status = "confirmed"
+    reservation.confirmed_at = datetime.utcnow()
+    
+    db.session.add(loan)
+    db.session.commit()
+    
+    flash(tr("loans.reservation_confirmed", title=book.title, username=reservation.user.username), "success")
+    return redirect(url_for("loans.admin_reservations"))
+
+
+@bp.route("/admin/reservation/decline/<int:reservation_id>", methods=["POST"])
+@login_required
+def admin_decline_reservation(reservation_id: int):
+    """Admin declines/removes a reservation."""
+    if not current_user.is_admin:
+        abort(403)
+    
+    reservation = Reservation.query.get_or_404(reservation_id)
+    
+    if reservation.status == "pending":
+        book_title = reservation.book.title
+        db.session.delete(reservation)
+        db.session.commit()
+        flash(tr("loans.reservation_declined", title=book_title), "success")
+    else:
+        flash(tr("loans.cannot_decline_confirmed"), "info")
+    
+    return redirect(url_for("loans.admin_reservations"))
