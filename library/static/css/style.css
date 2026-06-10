@@ -960,6 +960,22 @@ button[disabled],
   align-items: center;
 }
 
+.stat-link {
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, box-shadow 0.15s, transform 0.1s;
+}
+
+.stat-link:hover,
+.stat-link:focus-visible {
+  background: #edf4ff;
+  border-color: #acc3e0;
+  box-shadow: 0 12px 28px rgba(15, 74, 138, 0.13);
+  transform: translateY(-2px);
+  text-decoration: none;
+}
+
 .stat .num {
   font-size: 1.8rem;
   font-weight: 700;
