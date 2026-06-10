@@ -51,10 +51,8 @@
         {% if current_user.is_authenticated %}
           <div class="cart-icon">
             {% if not current_user.is_admin %}
-              {% set res_count = current_user.reservations.filter_by(status='pending').count() %}
               <a href="{{ url_for('loans.reservations') }}" title="{{ tr('loans.reservations_title') }}" class="icon-link">
                 📋
-                {% if res_count %}<span class="badge">{{ res_count }}</span>{% endif %}
               </a>
             {% else %}
               {% set cart_count = session.get('loan_cart', [])|length %}
@@ -64,7 +62,6 @@
               </a>
             {% endif %}
           </div>
-        {% endif %}
         {% endif %}
 
         <button
