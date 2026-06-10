@@ -8,7 +8,7 @@ services:
     name: TrhoveSvinyWeb
     env: python
     buildCommand: python3 -m venv .venv && ./.venv/bin/pip install -r requirements.txt
-    startCommand: ./.venv/bin/gunicorn run:app --bind 0.0.0.0:$PORT
+    startCommand: ./.venv/bin/python -c "from library import create_app, db; app=create_app(); ctx=app.app_context(); ctx.push(); db.create_all(); print('Tables created')" ; ./.venv/bin/gunicorn run:app --bind 0.0.0.0:$PORT
     envVars:
       - key: DATABASE_URL
         fromDatabase:
