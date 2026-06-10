@@ -420,6 +420,9 @@ table {
   z-index: 4200;
   min-width: 240px;
   width: min(92vw, 340px);
+  max-height: calc(100dvh - var(--menu-panel-top, 72px) - 8px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
   padding: 0.45rem;
   border: 1px solid #c7d7ec;
   border-radius: 12px;

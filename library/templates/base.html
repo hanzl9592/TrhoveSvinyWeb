@@ -223,7 +223,12 @@
           Math.max(toggleRect.right - panelWidth, margin),
           window.innerWidth - panelWidth - margin,
         );
-        const top = toggleRect.bottom + 6;
+        let top = toggleRect.bottom + 2;
+        const panelHeight = panelRect.height || 0;
+        const viewportBottom = window.innerHeight - margin;
+        if (panelHeight > 0 && top + panelHeight > viewportBottom) {
+          top = Math.max(margin, viewportBottom - panelHeight);
+        }
         mainNav.style.setProperty("--menu-panel-left", `${left}px`);
         mainNav.style.setProperty("--menu-panel-top", `${top}px`);
       }
