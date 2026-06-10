@@ -22,8 +22,8 @@ if not token:
 
 mail = mt.Mail(
     sender=mt.Address(
-        email=os.environ.get("MAILTRAP_SENDER_EMAIL", "hello@demomailtrap.co"),
-        name=os.environ.get("MAILTRAP_SENDER_NAME", "Mailtrap Test"),
+        email=os.environ.get("MAILTRAP_SENDER_EMAIL", "hello@knihovnazsts.online"),
+        name=os.environ.get("MAILTRAP_SENDER_NAME", "Knihovna ZŠTŠ"),
     ),
     to=[mt.Address(email=os.environ.get("MAILTRAP_TEST_TO", "ondrejhanzl@seznam.cz"))],
     subject="You are awesome!",
