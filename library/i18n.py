@@ -295,6 +295,8 @@ TRANSLATIONS = {
         "loans.not_pending_reservation": "This reservation is not pending.",
         "loans.no_copies_available": "No copies available for \u201c{title}\u201d.",
         "loans.user_already_has_book": "User already has \u201c{title}\u201d on loan.",
+        "loans.due_date_required": "Please select a due date.",
+        "loans.due_date_invalid": "Selected due date is invalid.",
         "loans.reserved": "Reserved",
         "loans.confirmed": "Confirmed",
         "footer.library": "Library",
@@ -589,6 +591,8 @@ TRANSLATIONS = {
         "loans.not_pending_reservation": "Tato rezervace není čekající.",
         "loans.no_copies_available": "Žádné kopie dostupné pro \u201e{title}\u201c.",
         "loans.user_already_has_book": "Uživatel už má \u201e{title}\u201c vypůjčenu.",
+        "loans.due_date_required": "Prosím vyberte datum vrácení.",
+        "loans.due_date_invalid": "Vybrané datum vrácení je neplatné.",
         "loans.reserved": "Rezervováno",
         "loans.confirmed": "Potvrzeno",
         "footer.library": "Knihovna",
@@ -606,8 +610,7 @@ def get_lang() -> str:
     lang = session.get("lang")
     if lang in SUPPORTED_LANGS:
         return lang
-    best = request.accept_languages.best_match(list(SUPPORTED_LANGS.keys()))
-    return best or "cs"
+    return "cs"
 
 
 def tr(key: str, **kwargs) -> str:

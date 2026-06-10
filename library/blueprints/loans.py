@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, time
 
 from flask import Blueprint, abort, flash, redirect, render_template, request, session, url_for
 from flask_login import current_user, login_required
@@ -262,6 +262,11 @@ def reserve(book_id: int):
         abort(403)
     
     book = Book.query.get_or_404(book_id)
+
+    if book.copies_available <= 0:
+        flash(tr("loans.no_copies_available", title=book.title), "warning")
+        next_url = request.form.get("next") or url_for("catalog.index")
+        return redirect(next_url)
     
     # Check if user already has this book on loan
     if current_user.loans.filter_by(book_id=book.id, returned_at=None).first():
@@ -342,6 +347,17 @@ def admin_confirm_reservation(reservation_id: int):
         abort(403)
     
     reservation = Reservation.query.get_or_404(reservation_id)
+
+    due_date_raw = (request.form.get("due_date") or "").strip()
+    if not due_date_raw:
+        flash(tr("loans.due_date_required"), "warning")
+        return redirect(url_for("loans.admin_reservations"))
+    try:
+        due_date = datetime.strptime(due_date_raw, "%Y-%m-%d").date()
+        due_at = datetime.combine(due_date, time(hour=23, minute=59, second=59))
+    except ValueError:
+        flash(tr("loans.due_date_invalid"), "warning")
+        return redirect(url_for("loans.admin_reservations"))
     
     if reservation.status != "pending":
         flash(tr("loans.not_pending_reservation"), "info")
@@ -360,7 +376,7 @@ def admin_confirm_reservation(reservation_id: int):
         return redirect(url_for("loans.admin_reservations"))
     
     # Create loan from reservation
-    loan = Loan(user_id=reservation.user_id, book_id=book.id)
+    loan = Loan(user_id=reservation.user_id, book_id=book.id, due_at=due_at)
     reservation.status = "confirmed"
     reservation.confirmed_at = datetime.utcnow()
     

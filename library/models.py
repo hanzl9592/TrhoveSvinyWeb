@@ -73,8 +73,12 @@ class Book(db.Model):
         return self.loans.filter_by(returned_at=None).count()
 
     @property
+    def copies_reserved(self) -> int:
+        return self.reservations.filter_by(status="pending").count()
+
+    @property
     def copies_available(self) -> int:
-        return max(self.total_copies - self.copies_on_loan, 0)
+        return max(self.total_copies - self.copies_on_loan - self.copies_reserved, 0)
 
     def __repr__(self) -> str:
         return f"<Book {self.title!r} by {self.author!r}>"

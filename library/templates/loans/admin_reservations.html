@@ -22,6 +22,7 @@
           <td>
             <form method="post" action="{{ url_for('loans.admin_confirm_reservation', reservation_id=res.id) }}" style="display:inline;">
               <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+              <input class="input" type="date" name="due_date" required style="max-width: 160px;" />
               <button class="btn" type="submit">{{ tr('loans.confirm_reservation') }}</button>
             </form>
             <form method="post" action="{{ url_for('loans.admin_decline_reservation', reservation_id=res.id) }}" style="display:inline;">

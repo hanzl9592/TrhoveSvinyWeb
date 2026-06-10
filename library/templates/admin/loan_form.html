@@ -6,6 +6,7 @@
   {{ form.hidden_tag() }}
   <p>{{ tr('admin.form_user') }} {{ form.user_id(class_="input") }}</p>
   <p>{{ tr('admin.form_book') }} {{ form.book_id(class_="input") }}</p>
+  <p>{{ tr('loans.due') }} <input class="input" type="date" name="due_date" required /></p>
   {% for field in [form.user_id, form.book_id] %}
     {% for err in field.errors %}<p class="error">{{ err }}</p>{% endfor %}
   {% endfor %}

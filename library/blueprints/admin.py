@@ -1,4 +1,5 @@
 import re
+from datetime import datetime, time
 from json import loads as json_loads
 from urllib.error import URLError
 from urllib.parse import quote
@@ -386,6 +387,17 @@ def loans_new():
     form.book_id.choices = [(b.id, f"{b.title} - {b.author}") for b in books]
 
     if form.validate_on_submit():
+        due_date_raw = (request.form.get("due_date") or "").strip()
+        if not due_date_raw:
+            flash(tr("loans.due_date_required"), "warning")
+            return render_template("admin/loan_form.html", form=form)
+        try:
+            due_date = datetime.strptime(due_date_raw, "%Y-%m-%d").date()
+            due_at = datetime.combine(due_date, time(hour=23, minute=59, second=59))
+        except ValueError:
+            flash(tr("loans.due_date_invalid"), "warning")
+            return render_template("admin/loan_form.html", form=form)
+
         user = db.session.get(User, form.user_id.data)
         book = db.session.get(Book, form.book_id.data)
         if not user or not book:
@@ -405,7 +417,7 @@ def loans_new():
             flash(tr("admin.loan_exists"), "info")
             return render_template("admin/loan_form.html", form=form)
 
-        loan = Loan(user_id=user.id, book_id=book.id)
+        loan = Loan(user_id=user.id, book_id=book.id, due_at=due_at)
         db.session.add(loan)
         db.session.commit()
         flash(tr("admin.loan_created", username=user.username, due=loan.due_at.strftime("%Y-%m-%d")), "success")
