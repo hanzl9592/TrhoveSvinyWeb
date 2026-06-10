@@ -365,8 +365,10 @@ def admin_confirm_reservation(reservation_id: int):
     
     book = reservation.book
     
-    # Check if book is available
-    if book.copies_available <= 0:
+    # A pending reservation already reduces copies_available by 1.
+    # Add it back so the reservation can confirm the copy it already holds.
+    available_for_confirmation = book.copies_available + 1
+    if available_for_confirmation <= 0:
         flash(tr("loans.no_copies_available", title=book.title), "warning")
         return redirect(url_for("loans.admin_reservations"))
     
