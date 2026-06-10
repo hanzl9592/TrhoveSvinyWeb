@@ -58,8 +58,9 @@
                 {% if current_user.pending_reservations_count %}<span class="badge">{{ current_user.pending_reservations_count }}</span>{% endif %}
               </a>
             {% else %}
-              {% set cart_count = session.get('loan_cart', [])|length %}
-              <a href="{{ url_for('loans.cart') }}" title="{{ tr('nav.cart') }}" class="icon-link">
+              {% set admin_cart = session.get('admin_loan_cart', {}) %}
+              {% set cart_count = (admin_cart.get('book_ids') or [])|length %}
+              <a href="{{ url_for('loans.admin_cart') }}" title="{{ tr('nav.admin_cart') }}" class="icon-link">
                 🛒
                 {% if cart_count %}<span class="badge">{{ cart_count }}</span>{% endif %}
               </a>

@@ -60,6 +60,11 @@
 
   <form method="post" action="{{ url_for('loans.admin_cart_confirm') }}" style="margin-top:1rem;">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+    <p>
+      <label><strong>{{ tr('loans.due') }}:</strong>
+        <input class="input" type="date" name="due_date" required style="max-width:180px;" />
+      </label>
+    </p>
     <button class="btn primary" type="submit">{{ tr('loans.cart_confirm_btn') }}</button>
     <a class="btn" href="{{ url_for('catalog.index') }}">{{ tr('loans.cart_continue') }}</a>
   </form>

@@ -192,6 +192,18 @@ def admin_cart_confirm():
         flash(tr("loans.admin_cart_no_user"), "warning")
         return redirect(url_for("loans.admin_cart"))
 
+    due_date_raw = (request.form.get("due_date") or "").strip()
+    if not due_date_raw:
+        flash(tr("loans.due_date_required"), "warning")
+        return redirect(url_for("loans.admin_cart"))
+    try:
+        from datetime import time as _time
+        due_date = datetime.strptime(due_date_raw, "%Y-%m-%d").date()
+        due_at = datetime.combine(due_date, _time(23, 59, 59))
+    except ValueError:
+        flash(tr("loans.due_date_invalid"), "warning")
+        return redirect(url_for("loans.admin_cart"))
+
     borrowed, skipped = [], []
     for book_id in book_ids:
         book = Book.query.get(book_id)
@@ -203,7 +215,7 @@ def admin_cart_confirm():
         if Loan.query.filter_by(user_id=target_user.id, book_id=book.id, returned_at=None).first():
             skipped.append(book.title)
             continue
-        loan = Loan(user_id=target_user.id, book_id=book.id)
+        loan = Loan(user_id=target_user.id, book_id=book.id, due_at=due_at)
         db.session.add(loan)
         borrowed.append(book.title)
 
@@ -215,7 +227,7 @@ def admin_cart_confirm():
     if skipped:
         flash(tr("loans.cart_skipped", titles=", ".join(skipped)), "warning")
 
-    return redirect(url_for("admin.loans"))
+    return redirect(url_for("admin.loans_history"))
 
 
 # ── my loans / return ─────────────────────────────────────────────────────────
