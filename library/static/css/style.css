@@ -566,7 +566,7 @@ table {
   position: relative;
   border: 0;
   border-radius: 0;
-  overflow: hidden;
+  overflow: visible;
   background: #ffffff;
   box-shadow: none;
 }
