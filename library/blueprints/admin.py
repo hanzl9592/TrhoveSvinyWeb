@@ -253,11 +253,13 @@ def book_delete(book_id: int):
     if book.copies_on_loan:
         flash(tr("admin.book_delete_blocked"), "warning")
         return redirect(url_for("admin.books"))
+    # Remove all historical loans and reservations before deleting
+    Reservation.query.filter_by(book_id=book.id).delete(synchronize_session=False)
+    Loan.query.filter_by(book_id=book.id).delete(synchronize_session=False)
     db.session.delete(book)
     db.session.commit()
     flash(tr("admin.book_deleted"), "info")
     return redirect(url_for("admin.books"))
-
 
 @bp.route("/loans")
 def loans():
@@ -303,6 +305,7 @@ def user_delete(user_id: int):
         flash(tr("admin.cannot_delete_self"), "warning")
         return redirect(url_for("admin.users"))
 
+    Reservation.query.filter_by(user_id=user.id).delete(synchronize_session=False)
     Loan.query.filter_by(user_id=user.id).delete(synchronize_session=False)
     db.session.delete(user)
     db.session.commit()
