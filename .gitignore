@@ -4,3 +4,4 @@ instance/
 .venv/
 venv/
 .vscode/
+.env
