@@ -28,15 +28,10 @@
     {% if current_user.is_authenticated %}
       {% if current_user.is_admin %}
         {% if book.copies_available > 0 %}
-          <form method="post" action="{{ url_for('loans.cart_add', book_id=book.id) }}">
+          <form method="post" action="{{ url_for('loans.admin_cart_add', book_id=book.id) }}">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
             <input type="hidden" name="next" value="{{ request.path }}" />
-            <button class="btn primary" type="submit">{{ tr('loans.cart_add_btn') }}</button>
-          </form>
-          <form method="post" action="{{ url_for('loans.admin_cart_add', book_id=book.id) }}" style="margin-top:0.5rem;">
-            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
-            <input type="hidden" name="next" value="{{ request.path }}" />
-            <button class="btn" type="submit">{{ tr('loans.admin_cart_add_btn') }}</button>
+            <button class="btn primary" type="submit">{{ tr('loans.admin_cart_add_btn') }}</button>
           </form>
         {% else %}
           <button class="btn" disabled>{{ tr('catalog.unavailable') }}</button>
