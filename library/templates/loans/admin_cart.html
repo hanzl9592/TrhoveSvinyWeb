@@ -5,10 +5,10 @@
 
 <section class="form narrow" style="margin-bottom:1.2rem;">
   <h2>{{ tr('loans.admin_cart_select_user') }}</h2>
-  <form method="post" action="{{ url_for('loans.admin_cart_set_user') }}">
+  <form method="post" action="{{ url_for('loans.admin_cart_set_user') }}" id="user-select-form">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
     <p>
-      <select name="user_id" class="input" style="max-width:340px;">
+      <select name="user_id" class="input" style="max-width:340px;" onchange="this.form.submit()">
         <option value="">— {{ tr('loans.admin_cart_pick_user') }} —</option>
         {% for u in users %}
           <option value="{{ u.id }}" {% if selected_user and selected_user.id == u.id %}selected{% endif %}>
@@ -16,7 +16,6 @@
           </option>
         {% endfor %}
       </select>
-      <button class="btn" type="submit">{{ tr('common.save') }}</button>
     </p>
   </form>
   {% if selected_user %}
@@ -62,12 +61,31 @@
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
     <p>
       <label><strong>{{ tr('loans.due') }}:</strong>
-        <input class="input" type="date" name="due_date" required style="max-width:180px;" />
+        <input class="input" type="date" name="due_date" id="due_date" required style="max-width:180px;" />
       </label>
     </p>
     <button class="btn primary" type="submit">{{ tr('loans.cart_confirm_btn') }}</button>
     <a class="btn" href="{{ url_for('catalog.index') }}">{{ tr('loans.cart_continue') }}</a>
   </form>
+
+  <script>
+    (function () {
+      var input = document.getElementById('due_date');
+      if (!input) return;
+      var d = new Date();
+      // +1 month
+      d.setMonth(d.getMonth() + 1);
+      // if weekend, advance to Monday
+      var day = d.getDay(); // 0=Sun, 6=Sat
+      if (day === 6) d.setDate(d.getDate() + 2);
+      else if (day === 0) d.setDate(d.getDate() + 1);
+      // format as YYYY-MM-DD
+      var yyyy = d.getFullYear();
+      var mm = String(d.getMonth() + 1).padStart(2, '0');
+      var dd = String(d.getDate()).padStart(2, '0');
+      input.value = yyyy + '-' + mm + '-' + dd;
+    })();
+  </script>
 {% else %}
   <p>{{ tr('loans.cart_empty_msg') }}</p>
   <a class="btn primary" href="{{ url_for('catalog.index') }}">{{ tr('loans.cart_continue') }}</a>
