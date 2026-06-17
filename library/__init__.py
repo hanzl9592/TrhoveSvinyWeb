@@ -230,6 +230,7 @@ def create_app(config: dict | None = None) -> Flask:
         PASSWORD_RESET_TOKEN_TTL_HOURS=int(
             os.environ.get("PASSWORD_RESET_TOKEN_TTL_HOURS", "2")
         ),
+        GOOGLE_BOOKS_API_KEY=os.environ.get("GOOGLE_BOOKS_API_KEY", ""),
     )
     if config:
         app.config.update(config)

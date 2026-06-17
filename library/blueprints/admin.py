@@ -159,6 +159,9 @@ def books_suggest():
             "printType": "books",
             "maxResults": 12,
         }
+        api_key = (current_app.config.get("GOOGLE_BOOKS_API_KEY") or "").strip()
+        if api_key:
+            params["key"] = api_key
         response = requests.get(
             google_url,
             params=params,

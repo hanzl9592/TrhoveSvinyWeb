@@ -36,3 +36,5 @@ services:
         value: "5"
       - key: MAIL_SEND_STEP_TIMEOUT_SECONDS
         value: "6"
+      - key: GOOGLE_BOOKS_API_KEY
+        sync: false
