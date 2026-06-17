@@ -1,9 +1,7 @@
 import re
 from datetime import datetime, time
-from json import loads as json_loads
-from urllib.error import URLError
-from urllib.parse import quote
-from urllib.request import urlopen
+
+import requests
 
 from flask import Blueprint, current_app, flash, jsonify, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
@@ -154,13 +152,21 @@ def books_suggest():
     }
 
     try:
-        google_url = (
-            "https://www.googleapis.com/books/v1/volumes?q="
-            f"{quote('intitle:' + query)}"
-            "&langRestrict=cs&printType=books&maxResults=12"
+        google_url = "https://www.googleapis.com/books/v1/volumes"
+        params = {
+            "q": f"intitle:{query}",
+            "langRestrict": "cs",
+            "printType": "books",
+            "maxResults": 12,
+        }
+        response = requests.get(
+            google_url,
+            params=params,
+            headers={"User-Agent": "Mozilla/5.0 (compatible; LibraryApp/1.0)"},
+            timeout=6.0,
         )
-        with urlopen(google_url, timeout=3.0) as response:
-            data = json_loads(response.read().decode("utf-8"))
+        response.raise_for_status()
+        data = response.json()
 
         for item in data.get("items", []):
             info = item.get("volumeInfo") or {}
@@ -204,8 +210,10 @@ def books_suggest():
                     "source": "google-cs",
                 }
             )
-    except (URLError, TimeoutError, OSError, ValueError):
-        pass
+    except requests.exceptions.RequestException as exc:
+        current_app.logger.warning("Book suggest: Google Books API call failed: %s", exc)
+    except (ValueError, KeyError) as exc:
+        current_app.logger.warning("Book suggest: failed to parse Google Books response: %s", exc)
 
     return jsonify(payload)
 
@@ -253,13 +261,11 @@ def book_delete(book_id: int):
     if book.copies_on_loan:
         flash(tr("admin.book_delete_blocked"), "warning")
         return redirect(url_for("admin.books"))
-    # Remove all historical loans and reservations before deleting
-    Reservation.query.filter_by(book_id=book.id).delete(synchronize_session=False)
-    Loan.query.filter_by(book_id=book.id).delete(synchronize_session=False)
     db.session.delete(book)
     db.session.commit()
     flash(tr("admin.book_deleted"), "info")
     return redirect(url_for("admin.books"))
+
 
 @bp.route("/loans")
 def loans():
@@ -305,7 +311,6 @@ def user_delete(user_id: int):
         flash(tr("admin.cannot_delete_self"), "warning")
         return redirect(url_for("admin.users"))
 
-    Reservation.query.filter_by(user_id=user.id).delete(synchronize_session=False)
     Loan.query.filter_by(user_id=user.id).delete(synchronize_session=False)
     db.session.delete(user)
     db.session.commit()
