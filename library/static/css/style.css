@@ -689,35 +689,54 @@ textarea {
   font-weight: 600;
 }
 
-.book-helper-layout {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 280px;
-  gap: 1rem;
-  align-items: start;
+.book-title-field {
+  position: relative;
 }
 
-.book-helper-side {
-  border: 1px solid #d6e1ef;
-  border-radius: 10px;
-  padding: 0.6rem;
-  background: #f8fbff;
-}
-
-.book-helper-title {
+.book-title-autocomplete {
+  position: relative;
   display: block;
-  margin-bottom: 0.4rem;
-  color: #123a6a;
 }
 
-.book-helper-combo {
-  width: 100%;
-  min-height: 220px;
-  border: 1px solid #c7d8ee;
-  border-radius: 9px;
-  padding: 0.35rem;
+.book-title-dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  z-index: 30;
+  margin: 0;
+  padding: 0.3rem;
+  list-style: none;
   background: #ffffff;
+  border: 1px solid #c7d8ee;
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(20, 40, 70, 0.14);
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+.book-title-dropdown li {
+  padding: 0.5rem 0.6rem;
+  border-radius: 7px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.book-title-dropdown li:hover,
+.book-title-dropdown li.highlighted {
+  background: #eef5ff;
+}
+
+.book-title-dropdown-main {
+  font-weight: 600;
   color: #173153;
-  font-size: 0.98rem;
+}
+
+.book-title-dropdown-sub {
+  font-size: 0.85rem;
+  color: #6b7d93;
 }
 
 .input:focus,
@@ -1123,8 +1142,8 @@ button[disabled],
     margin-top: 0;
   }
 
-  .book-helper-layout {
-    grid-template-columns: 1fr;
+  .book-title-dropdown {
+    max-height: 240px;
   }
 
   .topbar-inner {

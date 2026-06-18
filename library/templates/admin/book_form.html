@@ -4,22 +4,15 @@
 <h1>{{ tr('admin.edit_book') if book else tr('admin.add_book') }}</h1>
 <form method="post" class="form">
   {{ form.hidden_tag() }}
-  <div class="book-helper-layout">
-    <div>
-      <p>
-        {{ tr('admin.form_title') }}
-        {{ form.title(class_="input", id="book-title", autocomplete="off") }}
-        <button type="button" class="btn" id="book-helper-find">Find in Czech DB</button>
-        <span class="muted helper-hint" id="book-prefill-hint"></span>
-        {% for e in form.title.errors %}<span class="error">{{ e }}</span>{% endfor %}
-      </p>
-    </div>
-    <aside class="book-helper-side" aria-label="Book helper results">
-      <strong class="book-helper-title">Helper results</strong>
-      <select id="book-helper-combo" class="book-helper-combo" size="10" aria-label="Book helper combobox"></select>
-      <p><button type="button" class="btn" id="book-helper-use">Use selected</button></p>
-    </aside>
-  </div>
+  <p class="book-title-field">
+    {{ tr('admin.form_title') }}
+    <span class="book-title-autocomplete">
+      {{ form.title(class_="input", id="book-title", autocomplete="off") }}
+      <ul class="book-title-dropdown" id="book-helper-dropdown" role="listbox" hidden></ul>
+    </span>
+    <span class="muted helper-hint" id="book-prefill-hint"></span>
+    {% for e in form.title.errors %}<span class="error">{{ e }}</span>{% endfor %}
+  </p>
   <p>{{ tr('admin.form_author') }} {{ form.author(class_="input", id="book-author") }}{% for e in form.author.errors %}<span class="error">{{ e }}</span>{% endfor %}</p>
   <p>{{ tr('admin.form_isbn') }} {{ form.isbn(class_="input", id="book-isbn") }}{% for e in form.isbn.errors %}<span class="error">{{ e }}</span>{% endfor %}</p>
   <p>{{ tr('admin.form_category') }} {{ form.category(class_="input", id="book-category") }}{% for e in form.category.errors %}<span class="error">{{ e }}</span>{% endfor %}</p>
@@ -42,20 +35,33 @@
       const copiesInput = document.getElementById("book-total-copies");
       const coverInput = document.getElementById("book-cover-url");
       const descriptionInput = document.getElementById("book-description");
-      const findButton = document.getElementById("book-helper-find");
-      const combo = document.getElementById("book-helper-combo");
-      const useButton = document.getElementById("book-helper-use");
+      const dropdown = document.getElementById("book-helper-dropdown");
       const hint = document.getElementById("book-prefill-hint");
       const suggestUrl = "{{ url_for('admin.books_suggest') }}";
 
       let lastResults = [];
       let activeController = null;
+      let debounceTimer = null;
+      let highlightedIndex = -1;
 
       function setHint(text) {
         hint.textContent = text || "";
       }
 
+      function closeDropdown() {
+        dropdown.hidden = true;
+        dropdown.innerHTML = "";
+        highlightedIndex = -1;
+      }
+
+      function sourceLabel(item) {
+        if (item.source === "local") return "local";
+        if (item.source === "google-cs") return "CZ catalog";
+        return "external";
+      }
+
       function fillFromBook(book) {
+        titleInput.value = book.title || titleInput.value;
         authorInput.value = book.author || "";
         isbnInput.value = book.isbn || "";
         categoryInput.value = book.category || "";
@@ -65,33 +71,43 @@
         if (!copiesInput.value || copiesInput.value === "1") {
           copiesInput.value = book.total_copies || 1;
         }
-        setHint("Book details loaded from local Czech database. Please review and Save.");
+        setHint("Book details loaded. Please review and Save.");
+        closeDropdown();
       }
 
-      function sourceLabel(item) {
-        if (item.source === "local") return "local";
-        if (item.source === "google-cs") return "CZ catalog";
-        return "external";
-      }
-
-      function renderComboResults(results) {
-        combo.innerHTML = "";
+      function renderDropdown(results) {
+        dropdown.innerHTML = "";
         if (!results.length) {
-          const opt = document.createElement("option");
-          opt.value = "";
-          opt.textContent = "No match found.";
-          opt.disabled = true;
-          combo.appendChild(opt);
+          closeDropdown();
           return;
         }
-
         results.forEach((item, index) => {
-          const opt = document.createElement("option");
-          opt.value = String(index);
-          opt.textContent = `${item.title} - ${item.author} (${sourceLabel(item)})`;
-          combo.appendChild(opt);
+          const li = document.createElement("li");
+          li.setAttribute("role", "option");
+          li.dataset.index = String(index);
+          li.innerHTML =
+            '<span class="book-title-dropdown-main">' +
+            escapeHtml(item.title) +
+            '</span><span class="book-title-dropdown-sub">' +
+            escapeHtml(item.author || "") +
+            " &middot; " +
+            sourceLabel(item) +
+            "</span>";
+          li.addEventListener("mousedown", (event) => {
+            // mousedown fires before blur, so the click is not lost
+            event.preventDefault();
+            fillFromBook(results[index]);
+          });
+          dropdown.appendChild(li);
         });
-        combo.selectedIndex = 0;
+        dropdown.hidden = false;
+        highlightedIndex = -1;
+      }
+
+      function escapeHtml(value) {
+        const div = document.createElement("div");
+        div.textContent = value == null ? "" : String(value);
+        return div.innerHTML;
       }
 
       async function fetchSuggestions(query) {
@@ -105,48 +121,52 @@
           });
           if (!response.ok) return;
           lastResults = await response.json();
-          renderComboResults(lastResults);
-          if (lastResults.length > 0) {
-            setHint("Choose a result in the combobox and click Use selected.");
-          } else {
-            setHint("");
-          }
+          renderDropdown(lastResults);
+          setHint(lastResults.length ? "" : "No match found.");
         } catch (_err) {
-          setHint("");
+          // aborted or network error — leave dropdown as-is
         }
       }
 
-      function useSelectedResult() {
-        const idx = Number(combo.value);
-        if (!Number.isInteger(idx) || idx < 0 || idx >= lastResults.length) {
-          setHint("Select a valid result first.");
-          return;
-        }
-        fillFromBook(lastResults[idx]);
-      }
-
-      findButton.addEventListener("click", () => {
-        const q = (titleInput.value || "").trim();
+      titleInput.addEventListener("input", () => {
+        const q = titleInput.value.trim();
+        clearTimeout(debounceTimer);
         if (q.length < 2) {
-          lastResults = [];
-          renderComboResults(lastResults);
-          setHint("Type at least 2 characters then click Find.");
+          closeDropdown();
+          setHint("");
           return;
         }
-        fetchSuggestions(q);
+        debounceTimer = setTimeout(() => fetchSuggestions(q), 300);
       });
-
-      useButton.addEventListener("click", useSelectedResult);
-      combo.addEventListener("dblclick", useSelectedResult);
 
       titleInput.addEventListener("keydown", (event) => {
-        if (event.key === "Enter") {
+        const items = Array.from(dropdown.children);
+        if (dropdown.hidden || !items.length) return;
+
+        if (event.key === "ArrowDown") {
           event.preventDefault();
-          findButton.click();
+          highlightedIndex = Math.min(highlightedIndex + 1, items.length - 1);
+          items.forEach((el, i) => el.classList.toggle("highlighted", i === highlightedIndex));
+        } else if (event.key === "ArrowUp") {
+          event.preventDefault();
+          highlightedIndex = Math.max(highlightedIndex - 1, 0);
+          items.forEach((el, i) => el.classList.toggle("highlighted", i === highlightedIndex));
+        } else if (event.key === "Enter") {
+          if (highlightedIndex >= 0) {
+            event.preventDefault();
+            fillFromBook(lastResults[highlightedIndex]);
+          }
+        } else if (event.key === "Escape") {
+          closeDropdown();
         }
       });
 
-      setHint("Type title, click Find, then choose from combobox and Use selected.");
+      // Close the dropdown (without filling anything) when clicking outside it
+      document.addEventListener("click", (event) => {
+        if (!titleInput.contains(event.target) && !dropdown.contains(event.target)) {
+          closeDropdown();
+        }
+      });
     })();
   </script>
 {% endif %}
