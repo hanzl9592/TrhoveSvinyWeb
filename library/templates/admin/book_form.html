@@ -4,15 +4,15 @@
 <h1>{{ tr('admin.edit_book') if book else tr('admin.add_book') }}</h1>
 <form method="post" class="form">
   {{ form.hidden_tag() }}
-  <p class="book-title-field">
+  <div class="book-title-field">
     {{ tr('admin.form_title') }}
-    <span class="book-title-autocomplete">
+    <div class="book-title-autocomplete">
       {{ form.title(class_="input", id="book-title", autocomplete="off") }}
       <ul class="book-title-dropdown" id="book-helper-dropdown" role="listbox" hidden></ul>
-    </span>
+    </div>
     <span class="muted helper-hint" id="book-prefill-hint"></span>
     {% for e in form.title.errors %}<span class="error">{{ e }}</span>{% endfor %}
-  </p>
+  </div>
   <p>{{ tr('admin.form_author') }} {{ form.author(class_="input", id="book-author") }}{% for e in form.author.errors %}<span class="error">{{ e }}</span>{% endfor %}</p>
   <p>{{ tr('admin.form_isbn') }} {{ form.isbn(class_="input", id="book-isbn") }}{% for e in form.isbn.errors %}<span class="error">{{ e }}</span>{% endfor %}</p>
   <p>{{ tr('admin.form_category') }} {{ form.category(class_="input", id="book-category") }}{% for e in form.category.errors %}<span class="error">{{ e }}</span>{% endfor %}</p>

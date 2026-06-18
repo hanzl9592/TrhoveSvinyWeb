@@ -691,6 +691,7 @@ textarea {
 
 .book-title-field {
   position: relative;
+  margin: 0 0 0.9rem;
 }
 
 .book-title-autocomplete {
