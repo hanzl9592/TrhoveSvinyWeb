@@ -705,14 +705,34 @@ textarea {
   right: 0;
   z-index: 30;
   margin: 0;
-  padding: 0.3rem;
+  padding: 0.3rem 0.3rem 0.3rem 0.3rem;
   list-style: none;
   background: #ffffff;
   border: 1px solid #c7d8ee;
   border-radius: 10px;
   box-shadow: 0 8px 24px rgba(20, 40, 70, 0.14);
-  max-height: 320px;
-  overflow-y: auto;
+  height: 220px;
+  overflow-y: scroll;
+  scrollbar-width: thin;
+  scrollbar-color: #aac3e3 #eef4fb;
+}
+
+.book-title-dropdown::-webkit-scrollbar {
+  width: 10px;
+}
+
+.book-title-dropdown::-webkit-scrollbar-track {
+  background: #eef4fb;
+  border-radius: 0 10px 10px 0;
+}
+
+.book-title-dropdown::-webkit-scrollbar-thumb {
+  background: #aac3e3;
+  border-radius: 6px;
+}
+
+.book-title-dropdown::-webkit-scrollbar-thumb:hover {
+  background: #8aaed8;
 }
 
 .book-title-dropdown li {
@@ -1143,7 +1163,7 @@ button[disabled],
   }
 
   .book-title-dropdown {
-    max-height: 240px;
+    height: 180px;
   }
 
   .topbar-inner {
